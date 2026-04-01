@@ -1,10 +1,16 @@
 // FILE: src/app/dashboard/page.tsx
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { DashboardView } from "@/components/dashboard/DashboardView";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Review your saved sessions, score trends, and recent Sportivity coaching feedback.",
+};
 
 export default async function DashboardPage() {
   if (!hasSupabaseEnv()) {

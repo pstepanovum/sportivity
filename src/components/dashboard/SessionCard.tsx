@@ -51,7 +51,7 @@ export function SessionCard({ session }: SessionCardProps) {
         </div>
 
         <div className="flex items-center justify-between border-t border-silver-800 pt-4 text-sm text-medium_slate_blue-500">
-          <span className="font-medium">Open full breakdown</span>
+          <span className="font-medium">Session breakdown</span>
           <CaretRightIcon size={18} />
         </div>
       </Card>

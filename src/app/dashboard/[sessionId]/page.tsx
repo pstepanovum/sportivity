@@ -1,4 +1,5 @@
 // FILE: src/app/dashboard/[sessionId]/page.tsx
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -10,6 +11,11 @@ import { createClient } from "@/lib/supabase/server";
 import { exerciseLabel, exerciseTint, formatDate, formatDuration, scoreBadgeVariant, scoreLabel } from "@/lib/utils";
 import type { AnalysisFeedback } from "@/types/analysis";
 import type { Database } from "@/types/supabase";
+
+export const metadata: Metadata = {
+  title: "Session breakdown",
+  description: "Open a saved Sportivity session to review score, cues, and workout notes in detail.",
+};
 
 export default async function SessionDetailPage({
   params,

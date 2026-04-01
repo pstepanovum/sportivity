@@ -6,7 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 
 import { BrandLogo } from "@/components/layout/BrandLogo";
-import { Avatar, Button } from "@/components/ui";
+import { ProfileMenu } from "@/components/layout/ProfileMenu";
+import { Button } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { cn } from "@/lib/utils";
@@ -15,12 +16,6 @@ interface UserState {
   email?: string;
   name?: string | null;
 }
-
-const LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/analyze", label: "Analyze" },
-];
 
 export function Navbar() {
   const pathname = usePathname();
@@ -103,16 +98,24 @@ export function Navbar() {
     setIsSigningOut(false);
   };
 
+  const navLinks =
+    pathname.startsWith("/dashboard") || pathname.startsWith("/analyze")
+      ? [
+          { href: "/dashboard", label: "Dashboard" },
+          { href: "/analyze", label: "Analyze" },
+        ]
+      : [];
+
   return (
     <header className="sticky top-0 z-50 bg-transparent">
       <div className="mx-auto max-w-5xl px-6">
-        <div className="flex h-16 items-center justify-between gap-4">
+        <div className="relative flex h-16 items-center justify-between gap-4">
           <Link href="/" className="flex items-center transition-opacity hover:opacity-85" aria-label="Sportivity home">
             <BrandLogo variant="black" className="h-4 w-auto sm:h-5" priority />
           </Link>
 
-          <nav className="hidden items-center gap-6 md:flex">
-            {LINKS.map((link) => (
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex">
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -129,18 +132,12 @@ export function Navbar() {
 
           <div className="flex items-center gap-3">
             {user ? (
-              <>
-                <div className="hidden items-center gap-3 sm:flex">
-                  <Avatar name={user.name ?? user.email} />
-                  <div className="hidden md:block">
-                    <p className="text-sm font-medium text-charcoal-300">{user.name ?? "Athlete"}</p>
-                    <p className="text-xs text-grey-600">{user.email}</p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => void handleSignOut()} loading={isSigningOut}>
-                  Sign out
-                </Button>
-              </>
+              <ProfileMenu
+                name={user.name}
+                email={user.email}
+                isSigningOut={isSigningOut}
+                onSignOut={handleSignOut}
+              />
             ) : (
               <>
                 <Link href="/login">
@@ -154,8 +151,8 @@ export function Navbar() {
           </div>
         </div>
 
-        <nav className="flex gap-2 overflow-x-auto pb-4 md:hidden">
-          {LINKS.map((link) => (
+        <nav className={cn("gap-2 overflow-x-auto pb-4 md:hidden", navLinks.length > 0 ? "flex" : "hidden")}>
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}

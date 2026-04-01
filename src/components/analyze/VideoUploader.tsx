@@ -52,6 +52,8 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
   const previewLabel = isMobileDevice ? "Live cellphone camera preview" : "Live laptop camera preview";
   const uploadLabel = isMobileDevice ? "Use phone library" : "Choose file";
   const swapClipLabel = isMobileDevice ? "Use saved clip" : "Use uploaded clip";
+  const isExpandedMobileCapture = isMobileDevice && hasStream;
+  const controlButtonSize = isExpandedMobileCapture ? "lg" : "sm";
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -258,7 +260,7 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
   }, [attachStream, hasStream, videoRef]);
 
   return (
-    <Card className="space-y-4">
+    <Card className={cn("space-y-4", isExpandedMobileCapture && "-mx-4 rounded-[2rem] p-4 sm:mx-0 sm:p-6")}>
       <div className="space-y-1">
         <h3 className="text-base font-medium text-charcoal-300">Upload or record your set</h3>
         <p className="text-sm text-grey-500">
@@ -289,6 +291,7 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
         }}
         className={cn(
           "rounded-2xl border border-dashed border-silver-600 bg-white_smoke-800 p-6 transition-colors",
+          isExpandedMobileCapture && "rounded-[1.75rem] border-medium_slate_blue-700 bg-soft_periwinkle-900 p-3",
           isDragging && "border-medium_slate_blue-500 bg-soft_periwinkle-900",
         )}
       >
@@ -303,7 +306,12 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
 
         {value.url || hasStream ? (
           <div className="space-y-4">
-            <div className="overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100">
+            <div
+              className={cn(
+                "overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100",
+                isExpandedMobileCapture && "rounded-[1.5rem] border-medium_slate_blue-700",
+              )}
+            >
               <video
                 ref={videoRef}
                 src={hasStream ? undefined : value.url ?? undefined}
@@ -311,7 +319,10 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
                 autoPlay={hasStream}
                 muted={hasStream}
                 playsInline
-                className="aspect-video w-full object-cover"
+                className={cn(
+                  "w-full object-cover",
+                  isExpandedMobileCapture ? "aspect-[4/5] min-h-[420px]" : "aspect-video",
+                )}
                 onLoadedMetadata={() => {
                   const duration = videoRef.current?.duration ?? null;
                   onChange({
@@ -322,7 +333,12 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
               />
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div
+              className={cn(
+                "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+                isExpandedMobileCapture && "rounded-[1.5rem] bg-white p-4",
+              )}
+            >
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm text-charcoal-300">
                   <VideoIcon size={20} />
@@ -331,7 +347,7 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
                       ?? (isRecording ? "Recording in progress" : hasStream ? previewLabel : "Camera preview")}
                   </span>
                 </div>
-                <p className="text-xs text-grey-600">
+                <p className={cn("text-xs text-grey-600", isExpandedMobileCapture && "text-sm")}>
                   {value.duration
                     ? `${formatDuration(value.duration)} duration`
                     : hasStream
@@ -353,31 +369,61 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
                       size="sm"
                       onClick={() => void handleRecordToggle()}
                       loading={isFinishingRecord}
-                      className="w-full sm:w-auto"
+                      className="w-full justify-center sm:w-auto"
                     >
                       {isRecording ? <StopIcon size={18} /> : <CameraIcon size={18} />}
                       {isRecording ? "Stop recording" : "Start recording"}
                     </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={handleCloseCamera} className="w-full sm:w-auto">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size={controlButtonSize}
+                      onClick={handleCloseCamera}
+                      className="w-full justify-center sm:w-auto"
+                    >
                       <XIcon size={18} />
                       Turn camera off
                     </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => inputRef.current?.click()} className="w-full sm:w-auto">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size={controlButtonSize}
+                      onClick={() => inputRef.current?.click()}
+                      className="w-full justify-center sm:w-auto"
+                    >
                       <UploadSimpleIcon size={18} />
                       {swapClipLabel}
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button type="button" variant="secondary" size="sm" onClick={() => inputRef.current?.click()} className="w-full sm:w-auto">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size={controlButtonSize}
+                      onClick={() => inputRef.current?.click()}
+                      className="w-full justify-center sm:w-auto"
+                    >
                       <UploadSimpleIcon size={18} />
                       {isMobileDevice ? "Choose another clip" : "Replace"}
                     </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => void handleOpenCamera()} className="w-full sm:w-auto">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size={controlButtonSize}
+                      onClick={() => void handleOpenCamera()}
+                      className="w-full justify-center sm:w-auto"
+                    >
                       <CameraIcon size={18} />
                       {isMobileDevice ? "Use cellphone camera" : "Use laptop camera"}
                     </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={clearSelection} className="w-full sm:w-auto">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size={controlButtonSize}
+                      onClick={clearSelection}
+                      className="w-full justify-center sm:w-auto"
+                    >
                       <XIcon size={18} />
                       Clear
                     </Button>
