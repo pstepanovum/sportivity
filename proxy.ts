@@ -17,7 +17,7 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  const supabase = createServerClient<Database, "public", Database["public"]>(
+  const supabase = createServerClient<Database>(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
     {

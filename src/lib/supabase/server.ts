@@ -9,7 +9,7 @@ import type { Database } from "@/types/supabase";
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient<Database, "public", Database["public"]>(
+  return createServerClient<Database>(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
     {

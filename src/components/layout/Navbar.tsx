@@ -99,12 +99,20 @@ export function Navbar() {
   };
 
   const navLinks =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/analyze")
+    user || pathname.startsWith("/dashboard") || pathname.startsWith("/analyze")
       ? [
-          { href: "/dashboard", label: "Dashboard" },
+          { href: "/", label: "Home" },
           { href: "/analyze", label: "Analyze" },
         ]
       : [];
+
+  const isLinkActive = (href: string) => {
+    if (href === "/") {
+      return pathname === "/" || pathname.startsWith("/dashboard");
+    }
+
+    return pathname.startsWith(href);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-transparent">
@@ -122,7 +130,7 @@ export function Navbar() {
                 prefetch={false}
                 className={cn(
                   "text-sm transition-colors",
-                  pathname === link.href ? "text-charcoal-200" : "text-grey-500 hover:text-charcoal-300",
+                  isLinkActive(link.href) ? "text-charcoal-200" : "text-grey-500 hover:text-charcoal-300",
                 )}
               >
                 {link.label}
@@ -159,7 +167,7 @@ export function Navbar() {
               prefetch={false}
               className={cn(
                 "inline-flex min-w-max items-center rounded-full px-3 py-2 text-sm transition-colors",
-                pathname === link.href
+                isLinkActive(link.href)
                   ? "bg-white/80 text-charcoal-200"
                   : "bg-white/50 text-grey-500 hover:bg-white/70 hover:text-charcoal-300",
               )}

@@ -17,7 +17,28 @@ interface ProfileMenuProps {
 
 export function ProfileMenu({ email, isSigningOut = false, name, onSignOut }: ProfileMenuProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const closeTimeoutRef = useRef<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+
+  const clearCloseTimeout = () => {
+    if (closeTimeoutRef.current !== null) {
+      window.clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const openMenu = () => {
+    clearCloseTimeout();
+    setIsOpen(true);
+  };
+
+  const scheduleCloseMenu = () => {
+    clearCloseTimeout();
+    closeTimeoutRef.current = window.setTimeout(() => {
+      setIsOpen(false);
+      closeTimeoutRef.current = null;
+    }, 180);
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -45,18 +66,24 @@ export function ProfileMenu({ email, isSigningOut = false, name, onSignOut }: Pr
     };
   }, [isOpen]);
 
+  useEffect(() => () => clearCloseTimeout(), []);
+
   return (
     <div
       ref={containerRef}
       className="relative"
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={openMenu}
+      onMouseLeave={scheduleCloseMenu}
     >
       <button
         type="button"
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() => {
+          clearCloseTimeout();
+          setIsOpen((current) => !current);
+        }}
+        onFocus={openMenu}
         className="rounded-full focus-visible:ring-2 focus-visible:ring-medium_slate_blue-500 focus-visible:ring-offset-2"
       >
         <Avatar
@@ -70,27 +97,28 @@ export function ProfileMenu({ email, isSigningOut = false, name, onSignOut }: Pr
 
       <div
         className={cn(
-          "absolute right-0 top-full z-50 mt-3 w-[240px] rounded-2xl border border-silver-800 bg-white p-4 transition-all",
+          "absolute right-0 top-full z-50 w-[240px] pt-3 transition-all",
           isOpen ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
         )}
-        role="menu"
       >
-        <div className="space-y-1">
-          <p className="text-sm font-medium text-charcoal-300">{name ?? "Athlete"}</p>
-          <p className="text-xs text-grey-600">{email}</p>
-        </div>
+        <div className="rounded-2xl border border-silver-800 bg-white p-4" role="menu">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-charcoal-300">{name ?? "Athlete"}</p>
+            <p className="text-xs text-grey-600">{email}</p>
+          </div>
 
-        <div className="mt-4 border-t border-silver-800 pt-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            loading={isSigningOut}
-            onClick={() => void onSignOut()}
-            className="w-full justify-start"
-          >
-            <SignOutIcon size={18} />
-            Log out
-          </Button>
+          <div className="mt-4 border-t border-silver-800 pt-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={isSigningOut}
+              onClick={() => void onSignOut()}
+              className="w-full justify-start"
+            >
+              <SignOutIcon size={18} />
+              Log out
+            </Button>
+          </div>
         </div>
       </div>
     </div>

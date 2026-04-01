@@ -8,7 +8,7 @@ import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Home",
   description: "Review your saved sessions, score trends, and recent Sportivity coaching feedback.",
 };
 

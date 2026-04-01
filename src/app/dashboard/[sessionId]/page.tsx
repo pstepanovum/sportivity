@@ -63,8 +63,8 @@ export default async function SessionDetailPage({
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
-          <Link href="/dashboard" className="inline-flex text-sm text-grey-500 transition-colors hover:text-charcoal-300">
-            Back to dashboard
+          <Link href="/" className="inline-flex text-sm text-grey-500 transition-colors hover:text-charcoal-300">
+            Back to home
           </Link>
           <div className="space-y-1">
             <h1 className="text-3xl font-medium text-charcoal-200">Session breakdown</h1>

@@ -1,11 +1,14 @@
-// FILE: src/app/page.tsx
+// FILE: src/app/(auth)/layout.tsx
 import { redirect } from "next/navigation";
 
-import { LandingPage } from "@/components/home/LandingPage";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function HomePage() {
+interface AuthLayoutProps {
+  children: React.ReactNode;
+}
+
+export default async function AuthLayout({ children }: AuthLayoutProps) {
   if (hasSupabaseEnv()) {
     const supabase = await createClient();
     const {
@@ -17,5 +20,5 @@ export default async function HomePage() {
     }
   }
 
-  return <LandingPage />;
+  return children;
 }

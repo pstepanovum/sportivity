@@ -9,7 +9,7 @@ import type { Database } from "@/types/supabase";
 export function createRouteClient(request: NextRequest, response: NextResponse) {
   let activeResponse = response;
 
-  const supabase = createServerClient<Database, "public", Database["public"]>(
+  const supabase = createServerClient<Database>(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
     {
