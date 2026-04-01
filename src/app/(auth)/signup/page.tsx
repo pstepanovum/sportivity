@@ -72,7 +72,7 @@ export default function SignupPage() {
       <Card className="space-y-5">
         <div className="space-y-1 text-center">
           <div className="flex justify-center">
-            <BrandLogo variant="black" className="h-8 w-auto" />
+            <BrandLogo variant="black" className="h-6 w-auto" />
           </div>
           <h1 className="text-3xl font-medium text-charcoal-200">Create your account</h1>
           <p className="text-sm text-grey-500">Start storing scores, sessions, and form cues from every workout.</p>

@@ -108,7 +108,7 @@ export function Navbar() {
       <div className="mx-auto max-w-5xl px-6">
         <div className="flex h-16 items-center justify-between gap-4">
           <Link href="/" className="flex items-center transition-opacity hover:opacity-85" aria-label="Sportivity home">
-            <BrandLogo variant="color" className="h-8 w-auto sm:h-9" priority />
+            <BrandLogo variant="black" className="h-6 w-auto sm:h-7" priority />
           </Link>
 
           <nav className="hidden items-center gap-6 md:flex">

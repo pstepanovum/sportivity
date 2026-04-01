@@ -119,7 +119,7 @@ export default function LoginPage() {
       <Card className="space-y-5">
         <div className="space-y-1 text-center">
           <div className="flex justify-center">
-            <BrandLogo variant="black" className="h-8 w-auto" />
+            <BrandLogo variant="black" className="h-6 w-auto" />
           </div>
           <h1 className="text-3xl font-medium text-charcoal-200">Welcome back</h1>
           <p className="text-sm text-grey-500">Sign in to review reps, save sessions, and track your progress.</p>
