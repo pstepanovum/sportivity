@@ -93,12 +93,10 @@ export function FeedbackPanel({ feedback, exercise }: FeedbackPanelProps) {
           {feedback.errors.length > 0 ? (
             feedback.errors.map((error) => (
               <div key={`${error.joint}-${error.issue}`} className="rounded-2xl border border-silver-800 bg-white_smoke-800 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-charcoal-300">{error.joint}</p>
-                    <p className="mt-1 text-sm text-grey-500 first-letter:uppercase">{error.issue}</p>
-                  </div>
-                  <span className="inline-flex w-fit rounded-full bg-powder_petal-800 px-3 py-1 text-xs font-medium text-powder_petal-200">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-charcoal-300">{error.joint}</p>
+                  <p className="text-sm text-grey-500 first-letter:uppercase">{error.issue}</p>
+                  <span className="inline-flex whitespace-nowrap rounded-full bg-powder_petal-800 px-3 py-1 text-xs font-medium text-powder_petal-200">
                     {error.cue}
                   </span>
                 </div>

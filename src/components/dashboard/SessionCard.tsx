@@ -34,9 +34,7 @@ export function SessionCard({ session }: SessionCardProps) {
             <p className="text-4xl font-medium text-medium_slate_blue-500">{session.score}</p>
             <p className="text-sm text-grey-500">Form score</p>
           </div>
-          <div className="rounded-full border border-silver-800 bg-white_smoke-800 p-1">
-            <ScoreRing score={session.score} size={64} strokeWidth={5} />
-          </div>
+          <ScoreRing score={session.score} size={64} strokeWidth={5} />
         </div>
 
         <div className="space-y-2 border-t border-silver-800 pt-4">
