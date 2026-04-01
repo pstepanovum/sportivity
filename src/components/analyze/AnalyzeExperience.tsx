@@ -108,9 +108,12 @@ export function AnalyzeExperience() {
           </Card>
         ) : (
           <Card className="flex min-h-[320px] flex-col items-center justify-center gap-4 text-center">
-            <span className="rounded-full bg-medium_slate_blue-900 p-4 text-medium_slate_blue-500">
-              <ChartLineUpIcon size={24} />
-            </span>
+            <div className="relative h-14 w-14">
+              <span className="pointer-events-none absolute -left-24 top-0 h-14 w-32 rounded-full bg-medium_slate_blue-900" />
+              <span className="relative z-10 inline-flex h-14 w-14 items-center justify-center rounded-full bg-medium_slate_blue-900 text-medium_slate_blue-500">
+                <ChartLineUpIcon size={24} />
+              </span>
+            </div>
             <div className="space-y-1">
               <h2 className="text-xl font-medium text-charcoal-300">Your coaching results will show up here</h2>
               <p className="text-sm text-grey-500">Pick an exercise, upload a clip, and run the analysis to see your score.</p>

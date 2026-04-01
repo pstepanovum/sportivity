@@ -3,7 +3,7 @@ import { USAFlag } from "@/components/icons/flags/usa-flag";
 
 export function FooterCredits() {
   return (
-    <div className="flex w-full items-center justify-center gap-1.5 border-t border-silver-800 px-6 py-2 md:py-1.5">
+    <div className="flex w-full items-center justify-center gap-1.5 bg-white_smoke-700/80 px-6 py-2 md:py-1.5">
       <span className="text-xs text-grey-500">Designed by</span>
       <a
         href="https://pstepanov.dev"
@@ -13,7 +13,6 @@ export function FooterCredits() {
       >
         Pavel Stepanov
       </a>
-      <span className="text-xs text-grey-500">pstepanov.dev</span>
       <USAFlag className="h-2 w-3" />
     </div>
   );

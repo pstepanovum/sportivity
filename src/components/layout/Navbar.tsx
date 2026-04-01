@@ -119,7 +119,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-transparent">
       {showAnnouncementBar ? (
-        <div className="border-b border-medium_slate_blue-400 bg-medium_slate_blue-500">
+        <div className="bg-medium_slate_blue-500">
           <div className="mx-auto max-w-5xl px-6 py-2 text-center text-xs font-medium tracking-[0.01em] text-white">
             Built with Codex for sharper reps
           </div>

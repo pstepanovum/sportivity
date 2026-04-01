@@ -2,8 +2,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
-import { Footer } from "@/components/layout/Footer";
-import { Navbar } from "@/components/layout/Navbar";
+import { AppShell } from "@/components/layout/AppShell";
 
 import "./globals.css";
 
@@ -94,11 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/favicon/site.webmanifest" />
       </head>
       <body className="min-h-screen bg-white_smoke-500 font-sans">
-        <div className="flex min-h-screen flex-col">
-          <Navbar />
-          <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">{children}</main>
-          <Footer />
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

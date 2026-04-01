@@ -29,7 +29,7 @@ export const Ticker = ({
 
   return (
     <div
-      className={`relative z-10 w-full overflow-hidden rounded-full border border-silver-800 bg-white_smoke-800 py-1.5 ${className}`}
+      className={`relative z-10 w-full overflow-hidden rounded-full border border-silver-800 bg-white py-1.5 ${className}`}
     >
       <div
         className="flex whitespace-nowrap will-change-transform"

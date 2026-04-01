@@ -77,11 +77,56 @@ const EXERCISES = [
   { label: "Push-up", Icon: HandFistIcon },
 ];
 
+type StretchOrientation = "left" | "top" | "right";
+
+function stretchOrientationClasses(orientation: StretchOrientation) {
+  switch (orientation) {
+    case "top":
+      return "left-0 -top-14 h-[6.5rem] w-12";
+    case "right":
+      return "left-0 top-0 h-12 w-[7rem]";
+    case "left":
+    default:
+      return "-left-14 top-0 h-12 w-[6.5rem]";
+  }
+}
+
+function IconStretchBadge({
+  Icon,
+  orientation,
+  bubbleClassName,
+  iconClassName,
+  size,
+  weight = "regular",
+}: {
+  Icon: any;
+  orientation: StretchOrientation;
+  bubbleClassName: string;
+  iconClassName: string;
+  size: number;
+  weight?: "regular" | "fill";
+}) {
+  return (
+    <div className="relative h-12 w-12">
+      <span
+        className={cn(
+          "pointer-events-none absolute rounded-full",
+          stretchOrientationClasses(orientation),
+          bubbleClassName
+        )}
+      />
+      <span className={cn("relative z-10 inline-flex h-12 w-12 items-center justify-center", iconClassName)}>
+        <Icon size={size} weight={weight} />
+      </span>
+    </div>
+  );
+}
+
 export function LandingPage() {
   return (
     <div className="space-y-12 md:space-y-14">
       <Card className="overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(113,97,239,0.12),_transparent_35%),linear-gradient(135deg,_#fbfbfd_0%,_#f6f3ff_40%,_#fcfcfd_100%)] p-0">
-        <div className="grid gap-8 px-6 py-8 md:grid-cols-[1.08fr_0.92fr] md:px-8 md:py-8 lg:px-10">
+        <div className="relative z-10 grid gap-8 px-6 py-8 md:grid-cols-[1.08fr_0.92fr] md:px-8 md:py-8 lg:px-10">
           <div className="space-y-6">
             <div className="space-y-4">
               <Badge variant="brand">AI Form Coach</Badge>
@@ -114,7 +159,7 @@ export function LandingPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="dotted rounded-[1.75rem] border border-silver-800 bg-white/85 p-5">
+            <div className="dotted relative z-10 -mb-12 rounded-[1.75rem] rounded-b-none border border-silver-800 bg-white/85 p-5 pb-20 sm:-mb-14 sm:pb-22 md:-mb-16 md:pb-24">
               <div className="space-y-5">
                 <div className="flex items-center gap-4">
                   <div>
@@ -148,38 +193,51 @@ export function LandingPage() {
           </div>
         </div>
 
-        <div className="mt-0">
+        <div className="relative z-20 mt-0">
           <Ticker
             items={HERO_TICKER_ITEMS}
             speed={28}
             copies={8}
-            className="rounded-none border-x-0 border-b-0 border-t border-silver-800 bg-white/80 py-2"
+            className="rounded-none border-x-0 border-b-0 border-t border-silver-800 bg-white py-2"
           />
         </div>
       </Card>
 
       <section className="grid gap-4 md:grid-cols-2">
-        {FEATURE_CARDS.map(({ title, description, detail, Icon, wide }) => (
-          <Card key={title} className={cn("bg-white h-full", wide ? "md:col-span-2" : "")}>
-            <div className={cn("flex h-full flex-col gap-4", wide ? "md:flex-row md:items-end md:justify-between md:gap-8" : "")}>
-              <div className="space-y-4">
-                <span className="inline-flex rounded-full bg-medium_slate_blue-900 p-3 text-medium_slate_blue-500">
-                  <Icon size={22} />
-                </span>
-                <div className="space-y-2">
-                  <h2 className="text-xl font-medium text-charcoal-300">{title}</h2>
-                  <p className="text-sm text-grey-500">{description}</p>
+        {FEATURE_CARDS.map(({ title, description, detail, Icon, wide }, index) => {
+          const orientation: StretchOrientation = index === 0 ? "left" : index === 1 ? "right" : "top";
+
+          return (
+            <Card key={title} className={cn("relative h-full overflow-hidden bg-white", wide ? "md:col-span-2" : "")}>
+              <div className={cn("flex h-full flex-col gap-4", wide ? "md:flex-row md:items-stretch md:justify-between md:gap-8" : "")}>
+                <div className="space-y-4">
+                  <IconStretchBadge
+                    Icon={Icon}
+                    orientation={orientation}
+                    bubbleClassName="bg-medium_slate_blue-900"
+                    iconClassName="text-medium_slate_blue-500"
+                    size={22}
+                  />
+                  <div className="space-y-2">
+                    <h2 className="text-xl font-medium text-charcoal-300">{title}</h2>
+                    <p className="text-sm text-grey-500">{description}</p>
+                  </div>
+                </div>
+
+                <div className={cn("mt-auto", wide ? "md:flex md:w-80 md:self-stretch" : "")}>
+                  <span
+                    className={cn(
+                      "inline-flex w-fit rounded-xl border border-silver-800 bg-white_smoke-800 px-4 py-2 text-sm text-charcoal-300",
+                      wide ? "md:flex md:h-full md:w-full md:items-end md:justify-end md:px-5 md:py-4 md:text-right" : ""
+                    )}
+                  >
+                    {detail}
+                  </span>
                 </div>
               </div>
-
-              <div className={cn("mt-auto", wide ? "md:max-w-sm md:text-right" : "")}>
-                <span className="inline-flex w-fit rounded-xl border border-silver-800 bg-white_smoke-800 px-4 py-2 text-sm text-charcoal-300">
-                  {detail}
-                </span>
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </section>
 
       <section className="space-y-5">
@@ -193,12 +251,16 @@ export function LandingPage() {
 
         <div className="grid gap-4 md:grid-cols-3">
           {HOW_IT_WORKS.map(({ title, description, Icon }, index) => (
-            <Card key={title} className="space-y-4">
+            <Card key={title} className="relative space-y-4 overflow-hidden">
+              <IconStretchBadge
+                Icon={Icon}
+                orientation={index === 1 ? "top" : index === 2 ? "right" : "left"}
+                bubbleClassName="bg-medium_slate_blue-900"
+                iconClassName="text-medium_slate_blue-500"
+                size={20}
+              />
               <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex rounded-full bg-medium_slate_blue-900 p-3 text-medium_slate_blue-500">
-                  <Icon size={20} />
-                </span>
-                <span className="text-sm text-grey-500">0{index + 1}</span>
+                <span className="ml-auto text-sm text-grey-500">0{index + 1}</span>
               </div>
               <div className="space-y-2">
                 <h3 className="text-base font-medium text-charcoal-300">{title}</h3>
@@ -217,11 +279,16 @@ export function LandingPage() {
 
         <div className="grid gap-4 md:grid-cols-3">
           {EXERCISES.map(({ label, Icon }) => (
-            <Card key={label} className="bg-soft_periwinkle-900">
+            <Card key={label} className="relative overflow-hidden bg-soft_periwinkle-900">
               <div className="space-y-4">
-                <span className="inline-flex rounded-full bg-white/80 p-3 text-medium_slate_blue-500">
-                  <Icon size={22} weight="fill" />
-                </span>
+                <IconStretchBadge
+                  Icon={Icon}
+                  orientation={label === "Deadlift" ? "top" : label === "Push-up" ? "right" : "left"}
+                  bubbleClassName="bg-white/80"
+                  iconClassName="text-medium_slate_blue-500"
+                  size={22}
+                  weight="fill"
+                />
                 <div className="space-y-1">
                   <h3 className="text-base font-medium text-charcoal-300">{label}</h3>
                   <p className="text-sm text-grey-500">Score the rep and keep the cue that matters most.</p>
