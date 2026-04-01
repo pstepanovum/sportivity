@@ -3,15 +3,16 @@
 
 import { useCallback, useState } from "react";
 
-import { createDebugRequestId, debugError, debugLog, summarizeAngles, summarizeFrames } from "@/lib/debug";
+import { createDebugRequestId, debugError, debugLog, summarizeAngles, summarizeFrames, summarizePoseMotion as summarizePoseMotionForLog } from "@/lib/debug";
 import { useMediaPipe } from "@/hooks/useMediaPipe";
-import { averageAngles, fileToDataUrl, loadImageFromBase64, sampleFrames } from "@/lib/utils";
+import { averageAngles, fileToDataUrl, loadImageFromBase64, sampleFrames, summarizePoseMotion } from "@/lib/utils";
 import type {
   AnalysisFeedback,
   AnalysisStatus,
   CoachVoiceFeedback,
   Exercise,
   JointAngles,
+  PoseMotionSummary,
   PosePoint,
 } from "@/types/analysis";
 
@@ -42,12 +43,13 @@ export function useAnalysis() {
       });
 
       try {
-        const frames = await sampleFrames(video, 4);
+        const frames = await sampleFrames(video, 6);
         debugLog("useAnalysis", "Sampled frames from video", {
           requestId,
           ...summarizeFrames(frames),
         });
         let averagedAngles: JointAngles | undefined;
+        let poseSummary: PoseMotionSummary | undefined;
         let representativeLandmarks: PosePoint[] = [];
 
         try {
@@ -61,10 +63,12 @@ export function useAnalysis() {
           representativeLandmarks =
             analyzedFrames[Math.floor(analyzedFrames.length / 2)]?.landmarks ?? [];
           averagedAngles = averageAngles(analyzedFrames.map((entry) => entry.angles));
+          poseSummary = summarizePoseMotion(analyzedFrames);
           debugLog("useAnalysis", "Pose extraction finished", {
             requestId,
             landmarkCount: representativeLandmarks.length,
             angles: summarizeAngles(averagedAngles),
+            poseSummary: summarizePoseMotionForLog(poseSummary),
           });
         } catch (poseIssue) {
           debugError("useAnalysis", "Pose extraction failed, continuing with vision-only analysis", poseIssue, {
@@ -90,6 +94,7 @@ export function useAnalysis() {
             frames,
             exercise,
             angles: averagedAngles,
+            poseSummary,
           }),
         });
 

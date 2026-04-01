@@ -4,7 +4,9 @@
 import { useRef, useState } from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { SpeakerHighIcon } from "@phosphor-icons/react/dist/csr/SpeakerHigh";
+import { TrashIcon } from "@phosphor-icons/react/dist/csr/Trash";
 
 import { CoachVoiceCard } from "@/components/analyze/CoachVoiceCard";
 import { FeedbackPanel } from "@/components/analyze/FeedbackPanel";
@@ -21,11 +23,15 @@ interface SessionBreakdownViewProps {
 }
 
 export function SessionBreakdownView({ feedback, session }: SessionBreakdownViewProps) {
+  const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [coachAudio, setCoachAudio] = useState<CoachVoiceFeedback | null>(null);
   const [coachAudioError, setCoachAudioError] = useState<string | null>(null);
   const [isCoachAudioLoading, setIsCoachAudioLoading] = useState(false);
   const [coachReplayToken, setCoachReplayToken] = useState(0);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
 
   const handleHearFeedback = async () => {
     if (coachAudio) {
@@ -90,10 +96,54 @@ export function SessionBreakdownView({ feedback, session }: SessionBreakdownView
     }
   };
 
+  const handleDeleteSession = async () => {
+    if (!isDeleteConfirming) {
+      setIsDeleteConfirming(true);
+      setDeleteError(null);
+      return;
+    }
+
+    const requestId = createDebugRequestId(`session-${session.id}-delete`);
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    debugClientEvent("sessionBreakdown", "Deleting session from breakdown page", {
+      requestId,
+      sessionId: session.id,
+    });
+
+    try {
+      const response = await fetch(`/api/sessions?sessionId=${encodeURIComponent(session.id)}`, {
+        method: "DELETE",
+        headers: {
+          "x-sportivity-request-id": requestId,
+        },
+      });
+
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+
+      if (!response.ok) {
+        throw new Error(body?.error ?? "Unable to delete this session.");
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to delete this session.";
+      setDeleteError(message);
+      debugError("sessionBreakdown", "Session delete failed from client", error, {
+        requestId,
+        sessionId: session.id,
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-[32rem] space-y-2 lg:max-w-[28rem]">
           <Link href="/" className="inline-flex text-sm text-grey-500 transition-colors hover:text-charcoal-300">
             Back to home
           </Link>
@@ -103,7 +153,7 @@ export function SessionBreakdownView({ feedback, session }: SessionBreakdownView
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2 sm:flex-nowrap">
           <Button
             type="button"
             variant="secondary"
@@ -197,6 +247,40 @@ export function SessionBreakdownView({ feedback, session }: SessionBreakdownView
       </Card>
 
       <FeedbackPanel feedback={feedback} exercise={session.exercise} />
+
+      <Card className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-xl font-medium text-charcoal-300">Delete this session</h2>
+          <p className="text-sm text-grey-500">Remove this saved replay and breakdown from your history. This action cannot be undone.</p>
+        </div>
+
+        {deleteError ? <Badge variant="error">{deleteError}</Badge> : null}
+
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="danger"
+            onClick={() => void handleDeleteSession()}
+            loading={isDeleting}
+          >
+            {!isDeleting ? <TrashIcon size={18} /> : null}
+            {isDeleteConfirming ? "Confirm delete session" : "Delete session"}
+          </Button>
+          {isDeleteConfirming ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setIsDeleteConfirming(false);
+                setDeleteError(null);
+              }}
+              disabled={isDeleting}
+            >
+              Keep session
+            </Button>
+          ) : null}
+        </div>
+      </Card>
     </div>
   );
 }

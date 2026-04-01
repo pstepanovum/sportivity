@@ -29,10 +29,21 @@ export interface JointAngles {
   spine?: number;
 }
 
+export interface PoseMotionSummary {
+  averages?: JointAngles;
+  framesAnalyzed: number;
+  framesWithPose: number;
+  maxes?: JointAngles;
+  mins?: JointAngles;
+  poseCoverage: number;
+  ranges?: JointAngles;
+}
+
 export interface AnalysisRequest {
   exercise: Exercise;
   frames: string[];
   angles?: JointAngles;
+  poseSummary?: PoseMotionSummary;
 }
 
 export interface PosePoint {

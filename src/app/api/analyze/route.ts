@@ -1,11 +1,11 @@
 // FILE: src/app/api/analyze/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-import { createDebugRequestId, debugError, debugLog, summarizeAngles, summarizeFrames } from "@/lib/debug";
+import { createDebugRequestId, debugError, debugLog, summarizeAngles, summarizeFrames, summarizePoseMotion } from "@/lib/debug";
 import { analyzeForm } from "@/lib/openai/analyze";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
-import type { Exercise, JointAngles } from "@/types/analysis";
+import type { Exercise, JointAngles, PoseMotionSummary } from "@/types/analysis";
 
 const EXERCISES: Exercise[] = ["squat", "deadlift", "pushup"];
 
@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       frames?: string[];
       exercise?: Exercise;
       angles?: JointAngles;
+      poseSummary?: PoseMotionSummary;
     };
 
     if (!Array.isArray(body.frames) || body.frames.length === 0) {
@@ -62,9 +63,10 @@ export async function POST(request: NextRequest) {
       exercise: body.exercise,
       frames: summarizeFrames(body.frames),
       angles: summarizeAngles(body.angles),
+      poseSummary: summarizePoseMotion(body.poseSummary),
     });
 
-    const feedback = await analyzeForm(body.frames, body.exercise, body.angles, requestId);
+    const feedback = await analyzeForm(body.frames, body.exercise, body.angles, body.poseSummary, requestId);
     debugLog("api/analyze", "Analysis completed", {
       requestId,
       durationMs: Date.now() - startedAt,

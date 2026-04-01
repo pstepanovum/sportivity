@@ -1,5 +1,5 @@
 // FILE: src/lib/debug.ts
-import type { JointAngles } from "@/types/analysis";
+import type { JointAngles, PoseMotionSummary } from "@/types/analysis";
 
 export function createDebugRequestId(seed?: string | null) {
   if (seed && seed.trim().length > 0) {
@@ -76,4 +76,20 @@ export function summarizeAngles(angles?: JointAngles) {
   return Object.fromEntries(
     Object.entries(angles).filter((entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1])),
   );
+}
+
+export function summarizePoseMotion(poseSummary?: PoseMotionSummary) {
+  if (!poseSummary) {
+    return null;
+  }
+
+  return {
+    framesAnalyzed: poseSummary.framesAnalyzed,
+    framesWithPose: poseSummary.framesWithPose,
+    poseCoverage: poseSummary.poseCoverage,
+    averages: summarizeAngles(poseSummary.averages),
+    mins: summarizeAngles(poseSummary.mins),
+    maxes: summarizeAngles(poseSummary.maxes),
+    ranges: summarizeAngles(poseSummary.ranges),
+  };
 }

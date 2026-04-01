@@ -2,7 +2,17 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-import type { Exercise, JointAngles } from "@/types/analysis";
+import type { Exercise, JointAngles, PoseMotionSummary, PosePoint } from "@/types/analysis";
+
+const JOINT_ANGLE_KEYS: Array<keyof JointAngles> = [
+  "leftKnee",
+  "rightKnee",
+  "leftHip",
+  "rightHip",
+  "leftElbow",
+  "rightElbow",
+  "spine",
+];
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -107,17 +117,7 @@ export function clampScore(score: number): number {
 export function averageAngles(angleSets: JointAngles[]): JointAngles | undefined {
   if (angleSets.length === 0) return undefined;
 
-  const keys: Array<keyof JointAngles> = [
-    "leftKnee",
-    "rightKnee",
-    "leftHip",
-    "rightHip",
-    "leftElbow",
-    "rightElbow",
-    "spine",
-  ];
-
-  const averaged = keys.reduce<JointAngles>((acc, key) => {
+  const averaged = JOINT_ANGLE_KEYS.reduce<JointAngles>((acc, key) => {
     const values = angleSets
       .map((set) => set[key])
       .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
@@ -130,6 +130,71 @@ export function averageAngles(angleSets: JointAngles[]): JointAngles | undefined
   }, {});
 
   return Object.keys(averaged).length > 0 ? averaged : undefined;
+}
+
+function angleExtrema(
+  angleSets: JointAngles[],
+  mode: "min" | "max",
+): JointAngles | undefined {
+  if (angleSets.length === 0) return undefined;
+
+  const result = JOINT_ANGLE_KEYS.reduce<JointAngles>((acc, key) => {
+    const values = angleSets
+      .map((set) => set[key])
+      .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+
+    if (values.length > 0) {
+      acc[key] = mode === "min" ? Math.min(...values) : Math.max(...values);
+    }
+
+    return acc;
+  }, {});
+
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+export function summarizePoseMotion(
+  frames: Array<{
+    angles: JointAngles;
+    landmarks: PosePoint[];
+  }>,
+): PoseMotionSummary | undefined {
+  if (frames.length === 0) {
+    return undefined;
+  }
+
+  const angleSets = frames
+    .map((frame) => frame.angles)
+    .filter((angles) => Object.values(angles).some((value) => typeof value === "number" && Number.isFinite(value)));
+
+  const framesWithPose = frames.filter((frame) => frame.landmarks.length >= 29).length;
+  const mins = angleExtrema(angleSets, "min");
+  const maxes = angleExtrema(angleSets, "max");
+  const averages = averageAngles(angleSets);
+
+  const ranges =
+    mins && maxes
+      ? JOINT_ANGLE_KEYS.reduce<JointAngles>((acc, key) => {
+          const min = mins[key];
+          const max = maxes[key];
+
+          if (typeof min === "number" && typeof max === "number") {
+            acc[key] = Number((max - min).toFixed(1));
+          }
+
+          return acc;
+        }, {})
+      : undefined;
+
+  return {
+    averages,
+    framesAnalyzed: frames.length,
+    framesWithPose,
+    maxes,
+    mins,
+    poseCoverage: Number((framesWithPose / frames.length).toFixed(2)),
+    ranges: ranges && Object.keys(ranges).length > 0 ? ranges : undefined,
+  };
 }
 
 export function dataUrlFromBase64(base64: string, mime = "image/jpeg") {

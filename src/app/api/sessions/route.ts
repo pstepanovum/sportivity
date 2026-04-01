@@ -153,3 +153,84 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unable to load sessions." }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  const requestId = createDebugRequestId(request.headers.get("x-sportivity-request-id"));
+  const startedAt = Date.now();
+
+  try {
+    debugLog("api/sessions", "Incoming session delete request", {
+      requestId,
+      method: "DELETE",
+      path: request.nextUrl.pathname,
+    });
+
+    if (!hasSupabaseEnv()) {
+      return NextResponse.json({ error: "Supabase environment variables are not configured." }, { status: 503 });
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    debugLog("api/sessions", "Auth lookup finished for delete", {
+      requestId,
+      hasUser: Boolean(user),
+      userId: user?.id ?? null,
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const sessionId = request.nextUrl.searchParams.get("sessionId");
+
+    if (!sessionId) {
+      return NextResponse.json({ error: "sessionId required" }, { status: 400 });
+    }
+
+    const { data: existingSession, error: existingSessionError } = await supabase
+      .from("sessions")
+      .select("id")
+      .eq("id", sessionId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (existingSessionError) {
+      return NextResponse.json({ error: existingSessionError.message }, { status: 500 });
+    }
+
+    if (!existingSession) {
+      return NextResponse.json({ error: "Session not found." }, { status: 404 });
+    }
+
+    const { error, count } = await supabase
+      .from("sessions")
+      .delete({ count: "exact" })
+      .eq("id", sessionId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    if (!count) {
+      return NextResponse.json({ error: "Session delete was not permitted." }, { status: 403 });
+    }
+
+    debugLog("api/sessions", "Session deleted", {
+      requestId,
+      sessionId,
+      durationMs: Date.now() - startedAt,
+    });
+
+    return NextResponse.json({ deleted: true, sessionId });
+  } catch (err) {
+    debugError("api/sessions", "Session delete failed", err, {
+      requestId,
+      durationMs: Date.now() - startedAt,
+    });
+    return NextResponse.json({ error: "Unable to delete session." }, { status: 500 });
+  }
+}

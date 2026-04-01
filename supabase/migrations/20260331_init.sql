@@ -39,6 +39,10 @@ DROP POLICY IF EXISTS "Users can insert own sessions" ON public.sessions;
 CREATE POLICY "Users can insert own sessions" ON public.sessions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own sessions" ON public.sessions;
+CREATE POLICY "Users can delete own sessions" ON public.sessions
+  FOR DELETE USING (auth.uid() = user_id);
+
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
