@@ -1,13 +1,16 @@
 // FILE: src/components/layout/Navbar.tsx
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 
+import { ChartBarIcon } from "@phosphor-icons/react/dist/csr/ChartBar";
+import { LightningIcon } from "@phosphor-icons/react/dist/csr/Lightning";
+
 import { BrandLogo } from "@/components/layout/BrandLogo";
-import { ProfileMenu } from "@/components/layout/ProfileMenu";
-import { Button } from "@/components/ui";
+import { Avatar, Button } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { cn } from "@/lib/utils";
@@ -25,20 +28,14 @@ export function Navbar() {
   const hasEnv = hasSupabaseEnv();
 
   useEffect(() => {
-    if (!hasEnv) {
-      return;
-    }
+    if (!hasEnv) return;
 
     const supabase = createClient();
     let previousUserId: string | null = null;
 
     const loadUser = async () => {
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
-
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       previousUserId = currentUser?.id ?? null;
-
       setUser(
         currentUser
           ? {
@@ -51,9 +48,7 @@ export function Navbar() {
 
     void loadUser();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(
         session?.user
           ? {
@@ -67,27 +62,18 @@ export function Navbar() {
 
       if (event === "SIGNED_IN" && nextUserId && nextUserId !== previousUserId) {
         previousUserId = nextUserId;
-        startTransition(() => {
-          router.refresh();
-        });
+        startTransition(() => router.refresh());
         return;
       }
 
-      if (event === "SIGNED_OUT") {
-        previousUserId = null;
-      }
+      if (event === "SIGNED_OUT") previousUserId = null;
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [hasEnv]);
 
   const handleSignOut = async () => {
-    if (!hasEnv) {
-      return;
-    }
-
+    if (!hasEnv) return;
     const supabase = createClient();
     setIsSigningOut(true);
     await supabase.auth.signOut();
@@ -98,23 +84,124 @@ export function Navbar() {
     setIsSigningOut(false);
   };
 
-  const navLinks =
-    user || pathname.startsWith("/dashboard") || pathname.startsWith("/analyze")
-      ? [
-          { href: "/", label: "Home" },
-          { href: "/analyze", label: "Analyze" },
-        ]
-      : [];
+  const isAppPage =
+    user || pathname.startsWith("/dashboard") || pathname.startsWith("/analyze");
 
-  const showAnnouncementBar = !user && !pathname.startsWith("/dashboard") && !pathname.startsWith("/analyze");
+  const isLinkActive = (href: string) => pathname.startsWith(href);
+  const userLabel = user?.name ?? user?.email ?? "Athlete";
 
-  const isLinkActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/" || pathname.startsWith("/dashboard");
-    }
+  // ─── Pill navbar (dashboard / analyze) ───────────────────────────────────
 
-    return pathname.startsWith(href);
-  };
+  if (isAppPage) {
+    const appLinks = [
+      { href: "/dashboard", label: "Home", icon: <ChartBarIcon size={20} /> },
+      { href: "/analyze", label: "Analyze", icon: <LightningIcon size={22} weight="fill" /> },
+    ];
+
+    return (
+      <>
+        {/* ── Pill navbar — desktop only ── */}
+        <header className="sticky top-0 z-50 hidden md:block pt-4 pb-2">
+          <div className="mx-auto w-full max-w-5xl px-6">
+            <div className="flex w-full items-center justify-between rounded-full border border-silver-700 bg-white/90 px-2 py-1.5 backdrop-blur-md">
+              {/* Left: favicon + links grouped together */}
+              <div className="flex items-center gap-1">
+                <Link
+                  href="/dashboard"
+                  aria-label="Sportivity home"
+                  className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-white_smoke-700"
+                >
+                  <Image src="/favicon/favicon.svg" alt="Sportivity" width={24} height={24} className="h-6 w-6" priority />
+                </Link>
+
+                <div className="mx-1 h-4 w-px bg-silver-700" />
+
+                <nav className="flex items-center gap-0.5">
+                  {appLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      prefetch={false}
+                      className={cn(
+                        "inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                        isLinkActive(link.href)
+                          ? "bg-silver-800 text-grey-400"
+                          : "text-grey-500 hover:bg-white_smoke-700 hover:text-charcoal-300",
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+
+              {/* Right: profile */}
+              {user ? (
+                <div className="flex items-center gap-2 pr-0.5">
+                  <Avatar
+                    name={userLabel}
+                    className="h-8 w-8 border border-silver-700 bg-transparent text-xs font-medium text-charcoal-300"
+                  />
+                  <p className="max-w-[10rem] truncate text-sm font-medium text-charcoal-300">{userLabel}</p>
+                  <Button variant="ghost" size="sm" loading={isSigningOut} onClick={() => void handleSignOut()} className="px-4">
+                    Log out
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </header>
+
+        {/* ── Pill tab bar — mobile only, floating at bottom ── */}
+        <div
+          className="fixed bottom-0 inset-x-0 z-50 md:hidden px-6"
+          style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        >
+          <div className="flex w-full items-center justify-between rounded-full border border-silver-700 bg-white/90 px-2 py-1.5 backdrop-blur-md">
+            <nav className="flex min-w-0 flex-1 items-center gap-0.5">
+              {appLinks.map((link) => {
+                const active = isLinkActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    prefetch={false}
+                    className={cn(
+                      "inline-flex min-w-0 flex-1 items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-silver-800 text-grey-400"
+                        : "text-grey-500 hover:bg-white_smoke-700 hover:text-charcoal-300",
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {user ? (
+              <div className="ml-2 flex items-center gap-2">
+                <Avatar
+                  name={userLabel}
+                  className="h-8 w-8 shrink-0 border border-silver-700 bg-transparent text-xs font-medium text-charcoal-300"
+                />
+                <p className="hidden max-w-[5.5rem] truncate text-xs font-medium text-charcoal-300 min-[390px]:block">
+                  {userLabel}
+                </p>
+                <Button variant="ghost" size="sm" loading={isSigningOut} onClick={() => void handleSignOut()} className="px-3">
+                  Log out
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ─── Full-width navbar (landing page) ────────────────────────────────────
+
+  const showAnnouncementBar = true;
 
   return (
     <header className="sticky top-0 z-50 bg-transparent">
@@ -132,60 +219,15 @@ export function Navbar() {
             <BrandLogo variant="black" className="h-4 w-auto sm:h-5" priority />
           </Link>
 
-          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                prefetch={false}
-                className={cn(
-                  "text-sm transition-colors",
-                  isLinkActive(link.href) ? "text-charcoal-200" : "text-grey-500 hover:text-charcoal-300",
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
           <div className="flex items-center gap-3">
-            {user ? (
-              <ProfileMenu
-                name={user.name}
-                email={user.email}
-                isSigningOut={isSigningOut}
-                onSignOut={handleSignOut}
-              />
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">Sign in</Button>
-                </Link>
-                <Link href="/signup">
-                  <Button size="sm">Get started</Button>
-                </Link>
-              </>
-            )}
+            <Link href="/login">
+              <Button variant="ghost" size="sm">Sign in</Button>
+            </Link>
+            <Link href="/signup">
+              <Button size="sm">Get started</Button>
+            </Link>
           </div>
         </div>
-
-        <nav className={cn("gap-2 overflow-x-auto pb-4 md:hidden", navLinks.length > 0 ? "flex" : "hidden")}>
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              prefetch={false}
-              className={cn(
-                "inline-flex min-w-max items-center rounded-full px-3 py-2 text-sm transition-colors",
-                isLinkActive(link.href)
-                  ? "bg-white/80 text-charcoal-200"
-                  : "bg-white/50 text-grey-500 hover:bg-white/70 hover:text-charcoal-300",
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
       </div>
     </header>
   );
