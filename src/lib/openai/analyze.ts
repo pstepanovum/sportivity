@@ -12,20 +12,32 @@ const EXERCISE_CUES: Record<Exercise, string> = {
     "Key form points: straight body line, elbows 45 degrees from body, chest to floor, no hip sag or piking.",
 };
 
+function sanitizeViewerLanguage(text: string) {
+  return text
+    .replace(/provide images of/gi, "upload a clearer video of")
+    .replace(/images/gi, "video clips")
+    .replace(/image/gi, "video clip")
+    .replace(/frames/gi, "video")
+    .replace(/frame/gi, "video");
+}
+
 function normalizeFeedback(raw: Partial<AnalysisFeedback>): AnalysisFeedback {
   return {
-    overall: raw.overall?.slice(0, 140) ?? "Solid effort with room for cleaner mechanics.",
+    overall: sanitizeViewerLanguage(raw.overall?.slice(0, 140) ?? "Solid effort with room for cleaner mechanics."),
     score: clampScore(raw.score ?? 0),
-    correct: Array.isArray(raw.correct) ? raw.correct.slice(0, 3).map((item) => item.slice(0, 80)) : [],
+    correct: Array.isArray(raw.correct)
+      ? raw.correct.slice(0, 3).map((item) => sanitizeViewerLanguage(item.slice(0, 80)))
+      : [],
     errors: Array.isArray(raw.errors)
       ? raw.errors.slice(0, 4).map((item) => ({
-          joint: item.joint?.slice(0, 40) ?? "form",
-          issue: item.issue?.slice(0, 80) ?? "Needs closer review.",
-          cue: item.cue?.slice(0, 80) ?? "Slow down and reset your position.",
+          joint: sanitizeViewerLanguage(item.joint?.slice(0, 40) ?? "form"),
+          issue: sanitizeViewerLanguage(item.issue?.slice(0, 80) ?? "Needs closer review."),
+          cue: sanitizeViewerLanguage(item.cue?.slice(0, 80) ?? "Slow down and reset your position."),
         }))
       : [],
-    summary_cue:
+    summary_cue: sanitizeViewerLanguage(
       raw.summary_cue?.slice(0, 120) ?? "Focus on staying controlled and repeat the rep with intent.",
+    ),
   };
 }
 
@@ -72,7 +84,7 @@ export async function analyzeForm(
       messages: [
         {
           role: "system",
-          content: `You are an expert strength and conditioning coach analyzing exercise form from video frames.
+          content: `You are an expert strength and conditioning coach analyzing exercise form from moments sampled out of one uploaded video clip.
 ${EXERCISE_CUES[exercise]}
 ${angleText}
 
@@ -93,14 +105,15 @@ Score guide:
 50-69 = significant issues
 below 50 = major form breakdown
 
-Be specific, honest, and actionable. Keep each string under 80 characters.`,
+Be specific, honest, and actionable. Keep each string under 80 characters.
+Never ask the user for images or talk about frames. Talk about their uploaded video or clip instead.`,
         },
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: `Analyze my ${exercise} form from these ${frames.length} frames. Give detailed but concise coaching.`,
+              text: `Analyze my ${exercise} form from this uploaded video clip. These still moments were sampled from that one video. Give detailed but concise coaching.`,
             },
             ...imageContent,
           ],

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChartLineUpIcon } from "@phosphor-icons/react/dist/csr/ChartLineUp";
 
 import { AnalyzeButton } from "@/components/analyze/AnalyzeButton";
+import { CoachVoiceCard } from "@/components/analyze/CoachVoiceCard";
 import { ExerciseSelector } from "@/components/analyze/ExerciseSelector";
 import { FeedbackPanel } from "@/components/analyze/FeedbackPanel";
 import { PoseOverlay } from "@/components/analyze/PoseOverlay";
@@ -24,7 +25,19 @@ export function AnalyzeExperience() {
     duration: null,
   });
 
-  const { status, feedback, error, analyze, reset, overlayLandmarks, isPoseReady, poseError } = useAnalysis();
+  const {
+    status,
+    feedback,
+    coachAudio,
+    coachAudioError,
+    isCoachAudioLoading,
+    error,
+    analyze,
+    reset,
+    overlayLandmarks,
+    isPoseReady,
+    poseError,
+  } = useAnalysis();
 
   useEffect(() => {
     reset();
@@ -88,7 +101,7 @@ export function AnalyzeExperience() {
               {isBusy ? (
                 <div className="flex shrink-0 items-center gap-2 rounded-full bg-white_smoke-700 px-3 py-1.5 text-sm text-charcoal-300 whitespace-nowrap">
                   <Spinner className="h-4 w-4" />
-                  {status === "extracting" ? "Extracting frames" : "Analyzing form"}
+                  {status === "extracting" ? "Preparing your video" : "Analyzing form"}
                 </div>
               ) : null}
             </div>
@@ -118,7 +131,16 @@ export function AnalyzeExperience() {
           </Card>
         )}
 
-        {feedback ? <FeedbackPanel feedback={feedback} exercise={exercise} /> : null}
+        {feedback ? (
+          <>
+            <CoachVoiceCard
+              audio={coachAudio}
+              error={coachAudioError}
+              isLoading={isCoachAudioLoading}
+            />
+            <FeedbackPanel feedback={feedback} exercise={exercise} />
+          </>
+        ) : null}
       </div>
     </div>
   );

@@ -6,9 +6,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 
-import { ChartBarIcon } from "@phosphor-icons/react/dist/csr/ChartBar";
-import { LightningIcon } from "@phosphor-icons/react/dist/csr/Lightning";
-
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Avatar, Button } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +13,7 @@ import { hasSupabaseEnv } from "@/lib/supabase/config";
 import { cn } from "@/lib/utils";
 
 interface UserState {
+  avatarUrl?: string | null;
   email?: string;
   name?: string | null;
 }
@@ -33,43 +31,69 @@ export function Navbar() {
     const supabase = createClient();
     let previousUserId: string | null = null;
 
-    const loadUser = async () => {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
+    const hydrateUser = async () => {
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+
       previousUserId = currentUser?.id ?? null;
-      setUser(
-        currentUser
-          ? {
-              email: currentUser.email,
-              name: (currentUser.user_metadata.full_name as string | undefined) ?? currentUser.email ?? null,
-            }
-          : null,
-      );
+
+      if (!currentUser) {
+        setUser(null);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      setUser({
+        avatarUrl: profile?.avatar_url ?? null,
+        email: currentUser.email,
+        name: profile?.full_name ?? (currentUser.user_metadata.full_name as string | undefined) ?? currentUser.email ?? null,
+      });
     };
 
-    void loadUser();
+    void hydrateUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(
-        session?.user
-          ? {
-              email: session.user.email,
-              name: (session.user.user_metadata.full_name as string | undefined) ?? session.user.email ?? null,
-            }
-          : null,
-      );
-
       const nextUserId = session?.user?.id ?? null;
 
       if (event === "SIGNED_IN" && nextUserId && nextUserId !== previousUserId) {
         previousUserId = nextUserId;
+        void hydrateUser();
         startTransition(() => router.refresh());
         return;
       }
 
-      if (event === "SIGNED_OUT") previousUserId = null;
+      if (event === "SIGNED_OUT") {
+        previousUserId = null;
+        setUser(null);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    const handleProfileUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ avatarUrl?: string | null; name?: string | null }>).detail;
+
+      setUser((current) =>
+        current
+          ? {
+              ...current,
+              avatarUrl: detail?.avatarUrl ?? current.avatarUrl ?? null,
+              name: detail?.name ?? current.name,
+            }
+          : current,
+      );
+    };
+
+    window.addEventListener("sportivity:profile-updated", handleProfileUpdated as EventListener);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("sportivity:profile-updated", handleProfileUpdated as EventListener);
+    };
   }, [hasEnv]);
 
   const handleSignOut = async () => {
@@ -85,7 +109,7 @@ export function Navbar() {
   };
 
   const isAppPage =
-    user || pathname.startsWith("/dashboard") || pathname.startsWith("/analyze");
+    user || pathname.startsWith("/dashboard") || pathname.startsWith("/analyze") || pathname.startsWith("/settings");
 
   const isLinkActive = (href: string) => pathname.startsWith(href);
   const userLabel = user?.name ?? user?.email ?? "Athlete";
@@ -94,8 +118,9 @@ export function Navbar() {
 
   if (isAppPage) {
     const appLinks = [
-      { href: "/dashboard", label: "Home", icon: <ChartBarIcon size={20} /> },
-      { href: "/analyze", label: "Analyze", icon: <LightningIcon size={22} weight="fill" /> },
+      { href: "/dashboard", label: "Home" },
+      { href: "/analyze", label: "Analyze" },
+      { href: "/settings", label: "Settings" },
     ];
 
     return (
@@ -140,6 +165,7 @@ export function Navbar() {
                 <div className="flex items-center gap-2 pr-0.5">
                   <Avatar
                     name={userLabel}
+                    src={user.avatarUrl}
                     className="h-8 w-8 border border-silver-700 bg-transparent text-xs font-medium text-charcoal-300"
                   />
                   <p className="max-w-[10rem] truncate text-sm font-medium text-charcoal-300">{userLabel}</p>
@@ -183,9 +209,10 @@ export function Navbar() {
               <div className="ml-2 flex items-center gap-2">
                 <Avatar
                   name={userLabel}
+                  src={user.avatarUrl}
                   className="h-8 w-8 shrink-0 border border-silver-700 bg-transparent text-xs font-medium text-charcoal-300"
                 />
-                <p className="hidden max-w-[5.5rem] truncate text-xs font-medium text-charcoal-300 min-[390px]:block">
+                <p className="hidden max-w-[5rem] truncate text-xs font-medium text-charcoal-300 min-[430px]:block">
                   {userLabel}
                 </p>
                 <Button variant="ghost" size="sm" loading={isSigningOut} onClick={() => void handleSignOut()} className="px-3">

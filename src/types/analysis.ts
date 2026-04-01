@@ -1,5 +1,7 @@
 // FILE: src/types/analysis.ts
 export type Exercise = "squat" | "deadlift" | "pushup";
+export type CoachVoice = "alloy" | "sage" | "verse";
+export type CoachStyle = "supportive" | "direct" | "intense";
 
 export type AnalysisStatus = "idle" | "extracting" | "analyzing" | "done" | "error";
 
@@ -38,4 +40,11 @@ export interface PosePoint {
   y: number;
   z?: number;
   visibility?: number;
+}
+
+export interface CoachVoiceFeedback {
+  audioBase64: string;
+  mimeType: string;
+  script: string;
+  voice: CoachVoice;
 }

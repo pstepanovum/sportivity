@@ -14,7 +14,7 @@ interface AnalyzeButtonProps {
 
 const LABELS: Record<AnalysisStatus, string> = {
   idle: "Analyze my form",
-  extracting: "Sampling frames",
+  extracting: "Preparing your video",
   analyzing: "Coaching your rep",
   done: "Analyze again",
   error: "Try analysis again",

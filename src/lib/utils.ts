@@ -49,6 +49,24 @@ export function getInitials(value?: string | null): string {
   return parts.map((part) => part[0]?.toUpperCase() ?? "").join("");
 }
 
+export function getFirstName(value?: string | null): string | null {
+  if (!value) return null;
+
+  const [firstPart] = value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!firstPart) return null;
+
+  const cleaned = firstPart.includes("@") ? firstPart.split("@")[0] : firstPart;
+  const normalized = cleaned.replace(/[^a-zA-Z'-]/g, "");
+
+  if (!normalized) return null;
+
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
 export function exerciseLabel(exercise: Exercise): string {
   switch (exercise) {
     case "squat":

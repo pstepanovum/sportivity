@@ -6,12 +6,22 @@ import { useCallback, useState } from "react";
 import { createDebugRequestId, debugError, debugLog, summarizeAngles, summarizeFrames } from "@/lib/debug";
 import { useMediaPipe } from "@/hooks/useMediaPipe";
 import { averageAngles, fileToDataUrl, loadImageFromBase64, sampleFrames } from "@/lib/utils";
-import type { AnalysisFeedback, AnalysisStatus, Exercise, JointAngles, PosePoint } from "@/types/analysis";
+import type {
+  AnalysisFeedback,
+  AnalysisStatus,
+  CoachVoiceFeedback,
+  Exercise,
+  JointAngles,
+  PosePoint,
+} from "@/types/analysis";
 
 export function useAnalysis() {
   const { extractAngles, isReady: isPoseReady, error: poseError } = useMediaPipe();
   const [status, setStatus] = useState<AnalysisStatus>("idle");
   const [feedback, setFeedback] = useState<AnalysisFeedback | null>(null);
+  const [coachAudio, setCoachAudio] = useState<CoachVoiceFeedback | null>(null);
+  const [coachAudioError, setCoachAudioError] = useState<string | null>(null);
+  const [isCoachAudioLoading, setIsCoachAudioLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [overlayLandmarks, setOverlayLandmarks] = useState<PosePoint[]>([]);
 
@@ -21,6 +31,9 @@ export function useAnalysis() {
       setStatus("extracting");
       setError(null);
       setFeedback(null);
+      setCoachAudio(null);
+      setCoachAudioError(null);
+      setIsCoachAudioLoading(false);
       debugLog("useAnalysis", "Starting analysis flow", {
         requestId,
         exercise,
@@ -93,6 +106,55 @@ export function useAnalysis() {
 
         setFeedback(result);
         setStatus("done");
+
+        const coachAudioRequestId = createDebugRequestId(`${requestId}-voice`);
+        setIsCoachAudioLoading(true);
+        debugLog("useAnalysis", "Requesting coach voice audio", {
+          requestId: coachAudioRequestId,
+          sourceRequestId: requestId,
+        });
+
+        void (async () => {
+          const coachAudioResponse = await fetch("/api/coach-audio", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-sportivity-request-id": coachAudioRequestId,
+            },
+            body: JSON.stringify({
+              exercise,
+              feedback: result,
+            }),
+          });
+
+          const coachAudioBody = (await coachAudioResponse.json().catch(() => null)) as
+            | { error?: string }
+            | CoachVoiceFeedback
+            | null;
+
+          if (!coachAudioResponse.ok) {
+            const errorMessage =
+              coachAudioBody && "error" in coachAudioBody
+                ? coachAudioBody.error ?? "Unable to create coach voice."
+                : "Unable to create coach voice.";
+
+            throw new Error(errorMessage);
+          }
+
+          setCoachAudio(coachAudioBody as CoachVoiceFeedback);
+          setCoachAudioError(null);
+          debugLog("useAnalysis", "Coach voice audio ready", {
+            requestId: coachAudioRequestId,
+            voice: (coachAudioBody as CoachVoiceFeedback).voice,
+          });
+        })().catch((coachAudioIssue) => {
+          setCoachAudioError(coachAudioIssue instanceof Error ? coachAudioIssue.message : "Unable to create coach voice.");
+          debugError("useAnalysis", "Coach voice generation failed", coachAudioIssue, {
+            requestId: coachAudioRequestId,
+          });
+        }).finally(() => {
+          setIsCoachAudioLoading(false);
+        });
 
         const saveRequestId = createDebugRequestId(`${requestId}-save`);
         debugLog("useAnalysis", "Saving session to /api/sessions", {
@@ -171,11 +233,17 @@ export function useAnalysis() {
     setFeedback(null);
     setError(null);
     setOverlayLandmarks([]);
+    setCoachAudio(null);
+    setCoachAudioError(null);
+    setIsCoachAudioLoading(false);
   }, []);
 
   return {
     status,
     feedback,
+    coachAudio,
+    coachAudioError,
+    isCoachAudioLoading,
     error,
     analyze,
     reset,
