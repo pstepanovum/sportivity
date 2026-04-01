@@ -86,7 +86,7 @@ export function AnalyzeExperience() {
                 </p>
               </div>
               {isBusy ? (
-                <div className="flex items-center gap-2 rounded-full bg-white_smoke-700 px-3 py-1.5 text-sm text-charcoal-300">
+                <div className="flex shrink-0 items-center gap-2 rounded-full bg-white_smoke-700 px-3 py-1.5 text-sm text-charcoal-300 whitespace-nowrap">
                   <Spinner className="h-4 w-4" />
                   {status === "extracting" ? "Extracting frames" : "Analyzing form"}
                 </div>

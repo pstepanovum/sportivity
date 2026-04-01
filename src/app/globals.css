@@ -74,3 +74,17 @@ canvas {
   background-size: 20px 20px;
   overflow: hidden;
 }
+
+@keyframes score-ring-fill {
+  from {
+    stroke-dashoffset: var(--ring-from);
+  }
+
+  to {
+    stroke-dashoffset: var(--ring-to);
+  }
+}
+
+.score-ring-fill {
+  animation: score-ring-fill 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}

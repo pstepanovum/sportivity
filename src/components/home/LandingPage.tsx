@@ -116,12 +116,11 @@ export function LandingPage() {
           <div className="space-y-4">
             <div className="dotted rounded-[1.75rem] border border-silver-800 bg-white/85 p-5">
               <div className="space-y-5">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
                   <div>
                     <p className="text-sm text-grey-500">Sample session</p>
                     <h2 className="text-xl font-medium text-charcoal-300">One rep. One priority.</h2>
                   </div>
-                  <Badge variant="brand">84 score</Badge>
                 </div>
 
                 <div className="flex items-center gap-4 rounded-xl border border-silver-800 bg-white_smoke-800 p-4">

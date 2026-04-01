@@ -18,52 +18,50 @@ export function FeedbackPanel({ feedback, exercise }: FeedbackPanelProps) {
 
   return (
     <Card className="space-y-5">
-      <div className="rounded-[1.75rem] border border-silver-800 bg-gradient-to-br from-white to-white_smoke-800 p-5 sm:p-6">
-        <div className="grid gap-5 lg:grid-cols-[auto_1fr] lg:items-start">
-          <div className="flex justify-center lg:justify-start">
-            <div className="flex w-full max-w-[220px] flex-col items-center gap-3 rounded-[1.5rem] border border-silver-800 bg-white p-4 text-center">
-              <ScoreRing score={feedback.score} />
-              <div className="space-y-1">
-                <p className="text-xs text-grey-600">Form score</p>
-                <p className="text-2xl font-medium text-medium_slate_blue-500">{feedback.score}/100</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
+      <div className="rounded-[1.75rem] border border-silver-800 bg-gradient-to-br from-white to-white_smoke-800 p-5 sm:p-6 space-y-4">
+        {/* Score header — always a single row */}
+        <div className="flex items-center gap-4">
+          <ScoreRing score={feedback.score} size={84} />
+          <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap gap-2">
               <Badge variant={scoreBadgeVariant(feedback.score)}>{scoreLabel(feedback.score)}</Badge>
               <Badge className={exerciseTint(exercise)}>{exerciseLabel(exercise)}</Badge>
             </div>
-
-            <div className="space-y-2">
-              <h2 className="text-xl font-medium text-charcoal-300">{feedback.overall}</h2>
-              <p className="text-sm text-grey-500">
-                Score reflects joint position, control, rhythm, and how repeatable the rep looks.
-              </p>
+            <div>
+              <p className="text-xs text-grey-600">Form score</p>
+              <p className="text-2xl font-medium text-medium_slate_blue-500">{feedback.score}/100</p>
             </div>
+          </div>
+        </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-silver-800 bg-white p-4">
-                <p className="text-xs text-grey-600">Strong cues</p>
-                <p className="mt-2 text-3xl font-medium text-charcoal-300">{feedback.correct.length}</p>
-                <p className="mt-1 text-sm text-grey-500">Positive checkpoints the model would keep in your next rep.</p>
-              </div>
-              <div className="rounded-2xl border border-silver-800 bg-white p-4">
-                <p className="text-xs text-grey-600">What to repeat</p>
-                <p className="mt-2 text-sm font-medium text-charcoal-300">
-                  {feedback.correct[0] ?? "Your setup looks stable enough to keep building from here."}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-silver-800 bg-white p-4 sm:col-span-2">
-                <p className="text-xs text-grey-600">Fix first</p>
-                <div className="mt-2 space-y-1">
-                  <p className="text-sm font-medium text-charcoal-300">{primaryError?.joint ?? "No major fault"}</p>
-                  <p className="text-sm text-grey-500">
-                    {primaryError ? `${primaryError.issue}. ${primaryError.cue}` : "No major breakdown flagged in this clip."}
-                  </p>
-                </div>
-              </div>
+        {/* Overall summary */}
+        <div className="space-y-1">
+          <h2 className="text-xl font-medium text-charcoal-300">{feedback.overall}</h2>
+          <p className="text-sm text-grey-500">
+            Score reflects joint position, control, rhythm, and how repeatable the rep looks.
+          </p>
+        </div>
+
+        {/* Stat cards — 2-col within this single column, fine at any width */}
+        <div className="grid gap-3 grid-cols-2">
+          <div className="rounded-2xl border border-silver-800 bg-white p-4">
+            <p className="text-xs text-grey-600">Strong cues</p>
+            <p className="mt-2 text-3xl font-medium text-charcoal-300">{feedback.correct.length}</p>
+            <p className="mt-1 text-sm text-grey-500">Positive checkpoints to keep in your next rep.</p>
+          </div>
+          <div className="rounded-2xl border border-silver-800 bg-white p-4">
+            <p className="text-xs text-grey-600">What to repeat</p>
+            <p className="mt-2 text-sm font-medium text-charcoal-300">
+              {feedback.correct[0] ?? "Your setup looks stable enough to keep building from here."}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-silver-800 bg-white p-4 col-span-2">
+            <p className="text-xs text-grey-600">Fix first</p>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm font-medium text-charcoal-300">{primaryError?.joint ?? "No major fault"}</p>
+              <p className="text-sm text-grey-500 first-letter:uppercase">
+                {primaryError ? `${primaryError.issue}. ${primaryError.cue}` : "No major breakdown flagged in this clip."}
+              </p>
             </div>
           </div>
         </div>
@@ -98,7 +96,7 @@ export function FeedbackPanel({ feedback, exercise }: FeedbackPanelProps) {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-charcoal-300">{error.joint}</p>
-                    <p className="mt-1 text-sm text-grey-500">{error.issue}</p>
+                    <p className="mt-1 text-sm text-grey-500 first-letter:uppercase">{error.issue}</p>
                   </div>
                   <span className="inline-flex w-fit rounded-full bg-powder_petal-800 px-3 py-1 text-xs font-medium text-powder_petal-200">
                     {error.cue}
