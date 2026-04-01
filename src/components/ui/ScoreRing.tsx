@@ -47,7 +47,7 @@ export function ScoreRing({ score, size = 120 }: ScoreRingProps) {
           {Math.round(normalizedScore)}
         </span>
         {size >= 84 ? (
-          <span className="mt-0.5 text-[10px] uppercase tracking-[0.22em] text-grey-600">score</span>
+          <span className="mt-0.5 text-[10px] text-grey-600">score</span>
         ) : null}
       </div>
     </div>

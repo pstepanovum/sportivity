@@ -99,7 +99,7 @@ export function AnalyzeExperience() {
                 src={selection.url}
                 controls
                 playsInline
-                className="aspect-video w-full object-cover"
+                className="w-full object-contain max-h-[60vh]"
               />
               {feedback ? (
                 <PoseOverlay videoRef={resultVideoRef} landmarks={overlayLandmarks} feedback={feedback} />

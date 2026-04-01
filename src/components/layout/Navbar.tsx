@@ -116,6 +116,12 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-transparent">
+      <div className="border-b border-medium_slate_blue-400 bg-medium_slate_blue-500">
+        <div className="mx-auto max-w-5xl px-6 py-2 text-center text-xs font-medium tracking-[0.01em] text-white">
+          Built with Codex for sharper reps
+        </div>
+      </div>
+
       <div className="mx-auto max-w-5xl px-6">
         <div className="relative flex h-16 items-center justify-between gap-4">
           <Link href="/" className="flex items-center transition-opacity hover:opacity-85" aria-label="Sportivity home">

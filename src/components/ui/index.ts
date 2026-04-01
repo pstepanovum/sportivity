@@ -6,3 +6,4 @@ export { Card, CardDivider, CardHeader } from "./Card";
 export { Input } from "./Input";
 export { ScoreRing } from "./ScoreRing";
 export { Spinner } from "./Spinner";
+export { Ticker } from "./Ticker";

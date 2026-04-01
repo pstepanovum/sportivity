@@ -24,7 +24,7 @@ export function FeedbackPanel({ feedback, exercise }: FeedbackPanelProps) {
             <div className="flex w-full max-w-[220px] flex-col items-center gap-3 rounded-[1.5rem] border border-silver-800 bg-white p-4 text-center">
               <ScoreRing score={feedback.score} />
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-[0.18em] text-grey-600">Form score</p>
+                <p className="text-xs text-grey-600">Form score</p>
                 <p className="text-2xl font-medium text-medium_slate_blue-500">{feedback.score}/100</p>
               </div>
             </div>
@@ -45,18 +45,18 @@ export function FeedbackPanel({ feedback, exercise }: FeedbackPanelProps) {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl border border-silver-800 bg-white p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-grey-600">Strong cues</p>
+                <p className="text-xs text-grey-600">Strong cues</p>
                 <p className="mt-2 text-3xl font-medium text-charcoal-300">{feedback.correct.length}</p>
                 <p className="mt-1 text-sm text-grey-500">Positive checkpoints the model would keep in your next rep.</p>
               </div>
               <div className="rounded-2xl border border-silver-800 bg-white p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-grey-600">What to repeat</p>
+                <p className="text-xs text-grey-600">What to repeat</p>
                 <p className="mt-2 text-sm font-medium text-charcoal-300">
                   {feedback.correct[0] ?? "Your setup looks stable enough to keep building from here."}
                 </p>
               </div>
               <div className="rounded-2xl border border-silver-800 bg-white p-4 sm:col-span-2">
-                <p className="text-xs uppercase tracking-[0.18em] text-grey-600">Fix first</p>
+                <p className="text-xs text-grey-600">Fix first</p>
                 <div className="mt-2 space-y-1">
                   <p className="text-sm font-medium text-charcoal-300">{primaryError?.joint ?? "No major fault"}</p>
                   <p className="text-sm text-grey-500">

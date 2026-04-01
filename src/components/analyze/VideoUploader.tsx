@@ -48,7 +48,7 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
   const [isFinishingRecord, setIsFinishingRecord] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isMobileStudioOpen, setIsMobileStudioOpen] = useState(false);
-  const [mobilePreviewOrientation, setMobilePreviewOrientation] = useState<"vertical" | "horizontal">("vertical");
+  const [isFrontCamera, setIsFrontCamera] = useState(false);
 
   const { attachStream, hasStream, isRecording, startCamera, stopCamera, startRecording, stopRecording } = useVideoCapture();
 
@@ -71,11 +71,6 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
       : value.url
         ? "Clip is selected and ready for analysis."
         : "No clip selected yet.";
-
-  const fullscreenPreviewFrameClass =
-    mobilePreviewOrientation === "horizontal"
-      ? "w-full max-w-none aspect-video"
-      : "mx-auto w-full max-w-[20rem] aspect-[3/4]";
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -228,12 +223,14 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
         url: null,
         duration: null,
       });
+      const facingMode = isMobileDevice ? "environment" : "user";
+      setIsFrontCamera(facingMode === "user");
       debugClientEvent("videoUploader", "Opening camera flow", {
         cameraMode: isMobileDevice ? "mobile" : "desktop",
-        requestedFacingMode: isMobileDevice ? "environment" : "user",
+        requestedFacingMode: facingMode,
       });
       await startCamera({
-        facingMode: isMobileDevice ? "environment" : "user",
+        facingMode,
         videoElement: videoRef.current,
       });
     } catch (err) {
@@ -273,13 +270,6 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
     });
     stopCamera(videoRef.current);
     setIsMobileStudioOpen(false);
-  };
-
-  const handleChangeMobilePreviewOrientation = (nextOrientation: "vertical" | "horizontal") => {
-    setMobilePreviewOrientation(nextOrientation);
-    debugClientEvent("videoUploader", "Changed mobile preview orientation", {
-      orientation: nextOrientation,
-    });
   };
 
   const clearSelection = () => {
@@ -344,36 +334,39 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
   const renderPreviewSurface = (isFullscreen = false) => (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100",
-        isExpandedMobileCapture && "rounded-[1.5rem] border-medium_slate_blue-700",
-        isFullscreen && "flex flex-1 items-center justify-center rounded-[1.75rem] border-medium_slate_blue-700 p-3",
+        "overflow-hidden",
+        isFullscreen
+          ? "flex-1 min-h-0 bg-charcoal-100"
+          : cn(
+              "rounded-2xl border border-silver-800 bg-charcoal-100",
+              isExpandedMobileCapture && "rounded-[1.5rem] border-medium_slate_blue-700",
+            ),
       )}
     >
-      <div className={cn("overflow-hidden rounded-[1.35rem] bg-charcoal-100", isFullscreen ? fullscreenPreviewFrameClass : "w-full")}>
-        <video
-          ref={videoRef}
-          src={hasStream ? undefined : value.url ?? undefined}
-          controls={Boolean(value.url) && !hasStream}
-          autoPlay={hasStream}
-          muted={hasStream}
-          playsInline
-          className={cn(
-            "w-full",
-            isFullscreen
-              ? "h-full object-contain"
-              : isExpandedMobileCapture
-                ? "aspect-[4/5] min-h-[420px] object-cover"
-                : "aspect-video object-cover",
-          )}
-          onLoadedMetadata={() => {
-            const duration = videoRef.current?.duration ?? null;
-            onChange({
-              ...value,
-              duration: Number.isFinite(duration) ? duration : null,
-            });
-          }}
-        />
-      </div>
+      <video
+        ref={videoRef}
+        src={hasStream ? undefined : value.url ?? undefined}
+        controls={Boolean(value.url) && !hasStream}
+        autoPlay={hasStream}
+        muted={hasStream}
+        playsInline
+        className={cn(
+          "w-full",
+          isFullscreen
+            ? "h-full object-contain"
+            : isExpandedMobileCapture
+              ? "aspect-[4/5] min-h-[420px] object-cover"
+              : "max-h-[50vh] object-contain",
+        )}
+        style={hasStream && isFrontCamera ? { transform: "scaleX(-1)" } : undefined}
+        onLoadedMetadata={() => {
+          const duration = videoRef.current?.duration ?? null;
+          onChange({
+            ...value,
+            duration: Number.isFinite(duration) ? duration : null,
+          });
+        }}
+      />
     </div>
   );
 
@@ -382,7 +375,7 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
       className={cn(
         "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
         isExpandedMobileCapture && "rounded-[1.5rem] bg-white p-4",
-        isFullscreen && "rounded-[1.5rem] border border-silver-800 bg-white px-4 py-3",
+        isFullscreen && "border-t border-silver-800 bg-white px-4 py-3",
       )}
     >
       <div className="space-y-1">
@@ -567,80 +560,56 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
       </Card>
 
       {shouldUseMobileStudio ? (
-        <div className="fixed inset-0 z-[100] h-dvh w-screen bg-white_smoke-500 md:hidden">
+        <div
+          className="fixed inset-0 z-[100] flex h-dvh w-screen flex-col overflow-hidden overscroll-none md:hidden"
+          style={{ touchAction: "none" }}
+        >
+          {/* Header */}
           <div
-            className="flex h-full flex-col overflow-hidden overscroll-none px-4"
-            style={{
-              paddingTop: "max(0px, env(safe-area-inset-top))",
-              paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
-            }}
+            className="flex shrink-0 items-start justify-between gap-4 border-b border-silver-800 bg-white_smoke-500 px-4 pb-4"
+            style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-silver-800 bg-white_smoke-500 px-1 pb-4 pt-4">
-              <div className="space-y-2">
-                <Badge variant="brand">{hasStream ? "Camera live" : value.url ? "Rep selected" : "Capture studio"}</Badge>
-                <div className="space-y-1">
-                  <h3 className="text-xl font-medium text-charcoal-200">Capture your rep</h3>
-                  <p className="text-sm text-grey-500">Frame the exact rep you want analyzed, then keep the best clip.</p>
+            <div className="space-y-2">
+              <Badge variant="brand">{hasStream ? "Camera live" : value.url ? "Rep selected" : "Capture studio"}</Badge>
+              <div className="space-y-1">
+                <h3 className="text-xl font-medium text-charcoal-200">Capture your rep</h3>
+                <p className="text-sm text-grey-500">Frame the exact rep you want analyzed, then keep the best clip.</p>
+              </div>
+            </div>
+            <Button type="button" variant="ghost" size="sm" onClick={handleDismissMobileStudio} className="shrink-0">
+              <XIcon size={18} />
+              Close
+            </Button>
+          </div>
+
+          {/* Video area — edge-to-edge, fills all remaining space */}
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            {value.url || hasStream ? (
+              renderPreviewSurface(true)
+            ) : (
+              <div className="flex flex-1 items-center justify-center px-6 text-center">
+                <div className="space-y-2">
+                  <p className="text-base font-medium text-charcoal-300">Choose how you want to capture this set</p>
+                  <p className="text-sm text-grey-500">
+                    Open the rear camera for a fresh rep, or pick a clip from your library and review it here.
+                  </p>
                 </div>
               </div>
-              <Button type="button" variant="ghost" size="sm" onClick={handleDismissMobileStudio} className="shrink-0">
-                <XIcon size={18} />
-                Close
+            )}
+            {(value.url || hasStream) ? renderSelectionMeta(true) : null}
+          </div>
+
+          {/* Footer controls */}
+          <div
+            className="shrink-0 space-y-3 border-t border-silver-800 bg-white px-4 pt-4"
+            style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+          >
+            {renderActionButtons(true)}
+            {value.url && !hasStream ? (
+              <Button type="button" size="lg" onClick={() => setIsMobileStudioOpen(false)} className="w-full">
+                Keep this rep
               </Button>
-            </div>
-
-            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-1 pt-4">
-              {(hasStream || value.url) ? (
-                <>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      type="button"
-                      variant={mobilePreviewOrientation === "vertical" ? "secondary" : "ghost"}
-                      size="sm"
-                      onClick={() => handleChangeMobilePreviewOrientation("vertical")}
-                      className="w-full"
-                    >
-                      Vertical
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={mobilePreviewOrientation === "horizontal" ? "secondary" : "ghost"}
-                      size="sm"
-                      onClick={() => handleChangeMobilePreviewOrientation("horizontal")}
-                      className="w-full"
-                    >
-                      Horizontal
-                    </Button>
-                  </div>
-                  {renderFilmingBanner(true)}
-                </>
-              ) : null}
-
-              {value.url || hasStream ? (
-                <>
-                  {renderPreviewSurface(true)}
-                  {renderSelectionMeta(true)}
-                </>
-              ) : (
-                <>
-                  <div className="flex flex-1 items-center justify-center rounded-[1.75rem] border border-dashed border-medium_slate_blue-700 bg-soft_periwinkle-900 px-6 text-center">
-                    <div className="space-y-2">
-                      <p className="text-base font-medium text-charcoal-300">Choose how you want to capture this set</p>
-                      <p className="text-sm text-grey-500">Open the rear camera for a fresh rep, or pick a clip from your library and review it here.</p>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className="mt-4 space-y-3 rounded-[1.75rem] border border-silver-800 bg-white p-4">
-              {renderActionButtons(true)}
-              {value.url && !hasStream ? (
-                <Button type="button" size="lg" onClick={() => setIsMobileStudioOpen(false)} className="w-full">
-                  Keep this rep
-                </Button>
-              ) : null}
-            </div>
+            ) : null}
           </div>
         </div>
       ) : null}
