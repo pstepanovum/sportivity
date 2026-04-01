@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Badge, Button, Card, Input } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { createAuthCallbackUrl, hasSupabaseEnv } from "@/lib/supabase/config";
@@ -70,7 +71,9 @@ export default function SignupPage() {
     <div className="mx-auto mt-20 max-w-sm">
       <Card className="space-y-5">
         <div className="space-y-1 text-center">
-          <p className="text-sm text-grey-500">Sportivity</p>
+          <div className="flex justify-center">
+            <BrandLogo variant="black" className="h-8 w-auto" />
+          </div>
           <h1 className="text-3xl font-medium text-charcoal-200">Create your account</h1>
           <p className="text-sm text-grey-500">Start storing scores, sessions, and form cues from every workout.</p>
         </div>

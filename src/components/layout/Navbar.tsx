@@ -5,8 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 
-import { LightningIcon } from "@phosphor-icons/react/dist/csr/Lightning";
-
+import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Avatar, Button } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
@@ -108,11 +107,8 @@ export function Navbar() {
     <header className="sticky top-0 z-50 bg-transparent">
       <div className="mx-auto max-w-5xl px-6">
         <div className="flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 text-charcoal-200 transition-colors hover:text-charcoal-300">
-            <span className="rounded-full bg-medium_slate_blue-900 p-2 text-medium_slate_blue-500">
-              <LightningIcon size={16} weight="fill" />
-            </span>
-            <span className="font-display text-base font-medium tracking-[-0.03em]">Sportivity</span>
+          <Link href="/" className="flex items-center transition-opacity hover:opacity-85" aria-label="Sportivity home">
+            <BrandLogo variant="color" className="h-8 w-auto sm:h-9" priority />
           </Link>
 
           <nav className="hidden items-center gap-6 md:flex">
