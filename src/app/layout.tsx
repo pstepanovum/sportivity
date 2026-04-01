@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
-import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 
 import "./globals.css";
@@ -93,7 +92,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="flex min-h-screen flex-col">
           <Navbar />
           <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">{children}</main>
-          <Footer />
         </div>
       </body>
     </html>
