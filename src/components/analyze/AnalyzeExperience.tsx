@@ -68,7 +68,7 @@ export function AnalyzeExperience() {
             disabled={!canAnalyze || isBusy}
             onClick={() => {
               if (!sourceVideoRef.current) return;
-              void analyze(sourceVideoRef.current, exercise);
+              void analyze(sourceVideoRef.current, exercise, selection.file);
             }}
           />
           {error ? <Badge variant="error">{error}</Badge> : null}

@@ -118,6 +118,24 @@ export function dataUrlFromBase64(base64: string, mime = "image/jpeg") {
   return `data:${mime};base64,${base64}`;
 }
 
+export function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+        return;
+      }
+
+      reject(new Error("Unable to serialize selected video."));
+    };
+
+    reader.onerror = () => reject(reader.error ?? new Error("Unable to read selected video."));
+    reader.readAsDataURL(file);
+  });
+}
+
 export async function loadImageFromBase64(base64: string): Promise<HTMLImageElement> {
   const image = new Image();
   image.src = dataUrlFromBase64(base64);

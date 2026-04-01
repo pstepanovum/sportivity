@@ -68,7 +68,7 @@ export default async function SessionDetailPage({
           </Link>
           <div className="space-y-1">
             <h1 className="text-3xl font-medium text-charcoal-200">Session breakdown</h1>
-            <p className="text-sm text-grey-500">Review the exact cues, score, and movement notes stored for this workout.</p>
+            <p className="text-sm text-grey-500">Replay the exact set that was analyzed, then review the saved cues, score, and movement notes.</p>
           </div>
         </div>
 
@@ -79,17 +79,34 @@ export default async function SessionDetailPage({
 
       <Card className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-4">
-          {sessionRecord.thumbnail_url ? (
-            <div className="overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100">
-              <img
-                src={sessionRecord.thumbnail_url}
-                alt={`${exerciseLabel(sessionRecord.exercise)} session preview`}
-                className="aspect-video w-full object-cover"
-              />
+          {sessionRecord.video_url ? (
+            <div className="space-y-3">
+              <div className="overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100">
+                <video
+                  src={sessionRecord.video_url}
+                  poster={sessionRecord.thumbnail_url ?? undefined}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="aspect-video w-full object-cover"
+                />
+              </div>
+              <p className="text-sm text-grey-500">Saved replay from the exact clip Sportivity analyzed for this session.</p>
+            </div>
+          ) : sessionRecord.thumbnail_url ? (
+            <div className="space-y-3">
+              <div className="overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100">
+                <img
+                  src={sessionRecord.thumbnail_url}
+                  alt={`${exerciseLabel(sessionRecord.exercise)} session preview`}
+                  className="aspect-video w-full object-cover"
+                />
+              </div>
+              <p className="text-sm text-grey-500">This older session only saved a preview frame, so a full replay is not available.</p>
             </div>
           ) : (
             <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-silver-700 bg-white_smoke-800 text-sm text-grey-500">
-              No thumbnail was saved for this session.
+              No replay or thumbnail was saved for this session.
             </div>
           )}
         </div>

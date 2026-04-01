@@ -80,7 +80,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${coinbaseSans.variable} ${coinbaseDisplay.variable} ${coinbaseMono.variable}`}>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${coinbaseSans.variable} ${coinbaseDisplay.variable} ${coinbaseMono.variable}`}
+    >
       <head>
         <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />

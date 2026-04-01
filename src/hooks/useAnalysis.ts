@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 
 import { createDebugRequestId, debugError, debugLog, summarizeAngles, summarizeFrames } from "@/lib/debug";
 import { useMediaPipe } from "@/hooks/useMediaPipe";
-import { averageAngles, loadImageFromBase64, sampleFrames } from "@/lib/utils";
+import { averageAngles, fileToDataUrl, loadImageFromBase64, sampleFrames } from "@/lib/utils";
 import type { AnalysisFeedback, AnalysisStatus, Exercise, JointAngles, PosePoint } from "@/types/analysis";
 
 export function useAnalysis() {
@@ -16,7 +16,7 @@ export function useAnalysis() {
   const [overlayLandmarks, setOverlayLandmarks] = useState<PosePoint[]>([]);
 
   const analyze = useCallback(
-    async (video: HTMLVideoElement, exercise: Exercise) => {
+    async (video: HTMLVideoElement, exercise: Exercise, sourceFile?: File | null) => {
       const requestId = createDebugRequestId();
       setStatus("extracting");
       setError(null);
@@ -99,37 +99,64 @@ export function useAnalysis() {
           requestId: saveRequestId,
           sourceRequestId: requestId,
           score: result.score,
+          hasSourceFile: Boolean(sourceFile),
+          sourceFileName: sourceFile?.name ?? null,
+          sourceFileSize: sourceFile?.size ?? null,
         });
 
-        void fetch("/api/sessions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-sportivity-request-id": saveRequestId,
-          },
-          body: JSON.stringify({
-            exercise,
-            score: result.score,
-            feedback: result,
-            duration_seconds: video.duration,
-            thumbnail_url: `data:image/jpeg;base64,${frames[0]}`,
-          }),
-        })
-          .then(async (saveResponse) => {
-            const body = (await saveResponse.json().catch(() => null)) as { session?: { id?: string }; error?: string } | null;
+        void (async () => {
+          let persistedVideoUrl: string | null = null;
 
-            if (!saveResponse.ok) {
-              throw new Error(body?.error ?? "Unable to save session.");
+          if (sourceFile) {
+            try {
+              debugLog("useAnalysis", "Serializing video for session replay", {
+                requestId: saveRequestId,
+                fileName: sourceFile.name,
+                fileType: sourceFile.type,
+                fileSize: sourceFile.size,
+              });
+              persistedVideoUrl = await fileToDataUrl(sourceFile);
+              debugLog("useAnalysis", "Session replay video prepared", {
+                requestId: saveRequestId,
+                videoDataUrlChars: persistedVideoUrl.length,
+              });
+            } catch (videoSerializationError) {
+              debugError("useAnalysis", "Video serialization failed, saving session without replay clip", videoSerializationError, {
+                requestId: saveRequestId,
+              });
             }
+          }
 
-            debugLog("useAnalysis", "Session saved", {
-              requestId: saveRequestId,
-              sessionId: body?.session?.id ?? null,
-            });
-          })
-          .catch((saveError) => {
-            debugError("useAnalysis", "Session save failed", saveError, { requestId: saveRequestId });
+          const saveResponse = await fetch("/api/sessions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-sportivity-request-id": saveRequestId,
+            },
+            body: JSON.stringify({
+              exercise,
+              score: result.score,
+              feedback: result,
+              duration_seconds: video.duration,
+              thumbnail_url: `data:image/jpeg;base64,${frames[0]}`,
+              video_url: persistedVideoUrl,
+            }),
           });
+
+          const body = (await saveResponse.json().catch(() => null)) as { session?: { id?: string }; error?: string } | null;
+
+          if (!saveResponse.ok) {
+            throw new Error(body?.error ?? "Unable to save session.");
+          }
+
+          debugLog("useAnalysis", "Session saved", {
+            requestId: saveRequestId,
+            sessionId: body?.session?.id ?? null,
+            hasReplayVideo: Boolean(persistedVideoUrl),
+          });
+        })().catch((saveError) => {
+          debugError("useAnalysis", "Session save failed", saveError, { requestId: saveRequestId });
+        });
       } catch (err) {
         setStatus("error");
         setError(err instanceof Error ? err.message : "Unknown analysis error.");

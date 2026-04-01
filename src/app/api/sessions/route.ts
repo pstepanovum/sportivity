@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("sessions")
-      .select("*")
+      .select("id, user_id, exercise, score, feedback, thumbnail_url, duration_seconds, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -142,6 +142,7 @@ export async function GET(request: NextRequest) {
       requestId,
       durationMs: Date.now() - startedAt,
       sessionCount: sessions.length,
+      includesReplayVideo: false,
     });
     return NextResponse.json({ sessions });
   } catch (err) {
