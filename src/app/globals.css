@@ -1,33 +1,49 @@
+/* FILE: src/app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --bg-primary: #f5f5f5;
+  --bg-surface: #ffffff;
+  --text-primary: #242424;
+  --text-secondary: #7f7f7f;
+  --border: #e0e0e0;
+  --brand: #7161ef;
+  --brand-light: #e3dffc;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-coinbase-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+* {
+  box-sizing: border-box;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-coinbase-display), var(--font-coinbase-sans), system-ui, sans-serif;
+  letter-spacing: -0.03em;
+}
+
+*:focus {
+  outline: none;
+}
+
+video::-webkit-media-controls {
+  border-radius: 1rem;
+}
+
+canvas {
+  display: block;
 }

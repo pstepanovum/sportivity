@@ -1,113 +1,161 @@
-import Image from "next/image";
+// FILE: src/app/page.tsx
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+
+import { ArrowRightIcon } from "@phosphor-icons/react/dist/csr/ArrowRight";
+import { BarbellIcon } from "@phosphor-icons/react/dist/csr/Barbell";
+import { ChatsIcon } from "@phosphor-icons/react/dist/csr/Chats";
+import { HandFistIcon } from "@phosphor-icons/react/dist/csr/HandFist";
+import { PersonSimpleRunIcon } from "@phosphor-icons/react/dist/csr/PersonSimpleRun";
+import { VideoIcon } from "@phosphor-icons/react/dist/csr/Video";
+
+import { Badge, Button, Card, ScoreRing } from "@/components/ui";
+
+const HOW_IT_WORKS = [
+  {
+    title: "Upload a clip",
+    description: "Use your phone or laptop to send one short rep, or record inside the app.",
+    Icon: VideoIcon,
+  },
+  {
+    title: "AI reads your pose",
+    description: "MediaPipe tracks joints in-browser and packages angle data for the model.",
+    Icon: PersonSimpleRunIcon,
+  },
+  {
+    title: "Get coaching cues",
+    description: "Sportivity scores the lift and tells you exactly what to keep and fix.",
+    Icon: ChatsIcon,
+  },
+];
+
+const EXERCISES = [
+  { label: "Squat", Icon: PersonSimpleRunIcon },
+  { label: "Deadlift", Icon: BarbellIcon },
+  { label: "Push-up", Icon: HandFistIcon },
+];
+
+export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="space-y-12">
+      <section className="overflow-hidden rounded-[2rem] border border-silver-800 bg-gradient-to-br from-medium_slate_blue-900 via-white to-wisteria-900 p-8 md:p-10">
+        <div className="grid gap-10 md:grid-cols-[1.1fr_0.9fr] md:items-center">
+          <div className="space-y-6">
+            <Badge variant="brand">AI Form Coach</Badge>
+            <div className="space-y-4">
+              <h1 className="font-display text-4xl font-medium tracking-[-0.04em] text-charcoal-200 md:text-5xl">
+                Train smarter. Move better.
+              </h1>
+              <p className="text-lg text-grey-500">
+                Upload one set and get instant coaching cues powered by pose tracking and GPT-4o vision.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link href="/analyze" prefetch={false}>
+                <Button size="lg">
+                  Analyze my form
+                  <ArrowRightIcon size={20} />
+                </Button>
+              </Link>
+              <Link href="/dashboard" prefetch={false}>
+                <Button variant="secondary" size="lg">
+                  View progress
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { label: "Exercises", value: "3" },
+                { label: "Frames sampled", value: "4" },
+                { label: "Coach score", value: "0-100" },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-white/60 bg-white/70 p-4 backdrop-blur">
+                  <p className="text-sm text-grey-500">{stat.label}</p>
+                  <p className="mt-1 text-2xl font-medium text-charcoal-200">{stat.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Card className="relative overflow-hidden bg-white/90 backdrop-blur">
+            <div className="absolute inset-x-6 top-0 h-24 rounded-b-full bg-medium_slate_blue-900 blur-3xl" />
+            <div className="relative space-y-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm text-grey-500">Example session</p>
+                  <h2 className="text-xl font-medium text-charcoal-300">Squat analysis</h2>
+                </div>
+                <Badge variant="brand">Live feedback</Badge>
+              </div>
+
+              <div className="flex items-center gap-6">
+                <ScoreRing score={84} size={96} />
+                <div className="space-y-2">
+                  <p className="text-sm text-grey-500">Overall cue</p>
+                  <p className="text-base font-medium text-charcoal-300">Drive your knees out and keep your chest taller.</p>
+                </div>
+              </div>
+
+              <div className="grid gap-3">
+                {[
+                  "Depth looks strong and heels stay grounded.",
+                  "Upper back stays mostly neutral through the rep.",
+                  "Slight knee cave shows up near the bottom position.",
+                ].map((item) => (
+                  <div key={item} className="rounded-2xl border border-silver-800 bg-white_smoke-800 p-4 text-sm text-charcoal-300">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
         </div>
-      </div>
+      </section>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      <section className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-xl font-medium text-charcoal-300">How it works</h2>
+          <p className="text-sm text-grey-500">A quick flow designed for feedback between sets, not after your workout is over.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {HOW_IT_WORKS.map(({ title, description, Icon }) => (
+            <Card key={title} className="space-y-4">
+              <span className="inline-flex rounded-full bg-medium_slate_blue-900 p-3 text-medium_slate_blue-500">
+                <Icon size={24} />
+              </span>
+              <div className="space-y-2">
+                <h3 className="text-base font-medium text-charcoal-300">{title}</h3>
+                <p className="text-sm text-grey-500">{description}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      <section className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-xl font-medium text-charcoal-300">Exercises supported</h2>
+          <p className="text-sm text-grey-500">Start with the three most common movement patterns for coaching and progress tracking.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {EXERCISES.map(({ label, Icon }) => (
+            <div key={label} className="rounded-2xl bg-soft_periwinkle-900 p-6">
+              <div className="space-y-4">
+                <span className="inline-flex rounded-full bg-white/80 p-3 text-medium_slate_blue-500">
+                  <Icon size={24} weight="fill" />
+                </span>
+                <div className="space-y-1">
+                  <h3 className="text-base font-medium text-charcoal-300">{label}</h3>
+                  <p className="text-sm text-grey-500">Coach positioning, control, and repeatability rep by rep.</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
