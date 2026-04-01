@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 
 import { CameraIcon } from "@phosphor-icons/react/dist/csr/Camera";
-import { CheckCircleIcon } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { StopIcon } from "@phosphor-icons/react/dist/csr/Stop";
 import { UploadSimpleIcon } from "@phosphor-icons/react/dist/csr/UploadSimple";
 import { VideoIcon } from "@phosphor-icons/react/dist/csr/Video";
@@ -18,12 +17,8 @@ import { cn, formatDuration } from "@/lib/utils";
 
 const SUPPORTED_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
-const FILMING_TIPS = [
-  "Film from the side.",
-  "Keep your full body visible.",
-  "Place the phone around hip height.",
-  "Record one clean rep with steady framing.",
-];
+const FILMING_BANNER =
+  "Best results: film from the side, keep your full body visible, and keep the phone around hip height.";
 
 function normalizeVideoMimeType(type?: string | null) {
   return type?.split(";")[0]?.trim().toLowerCase() || "";
@@ -53,6 +48,7 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
   const [isFinishingRecord, setIsFinishingRecord] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [isMobileStudioOpen, setIsMobileStudioOpen] = useState(false);
+  const [mobilePreviewOrientation, setMobilePreviewOrientation] = useState<"vertical" | "horizontal">("vertical");
 
   const { attachStream, hasStream, isRecording, startCamera, stopCamera, startRecording, stopRecording } = useVideoCapture();
 
@@ -75,6 +71,11 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
       : value.url
         ? "Clip is selected and ready for analysis."
         : "No clip selected yet.";
+
+  const fullscreenPreviewFrameClass =
+    mobilePreviewOrientation === "horizontal"
+      ? "w-full max-w-none aspect-video"
+      : "mx-auto w-full max-w-[20rem] aspect-[3/4]";
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -274,6 +275,13 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
     setIsMobileStudioOpen(false);
   };
 
+  const handleChangeMobilePreviewOrientation = (nextOrientation: "vertical" | "horizontal") => {
+    setMobilePreviewOrientation(nextOrientation);
+    debugClientEvent("videoUploader", "Changed mobile preview orientation", {
+      orientation: nextOrientation,
+    });
+  };
+
   const clearSelection = () => {
     debugClientEvent("videoUploader", "Clearing selected video");
     stopCamera(videoRef.current);
@@ -322,20 +330,14 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
     };
   }, [shouldUseMobileStudio]);
 
-  const renderFilmingGuide = (compact = false) => (
-    <div className={cn("rounded-2xl border border-silver-800 bg-white p-4 text-left", compact && "border-medium_slate_blue-700")}>
-      <p className="text-sm font-medium text-charcoal-300">For best results</p>
-      <p className="mt-1 text-sm text-grey-500">
-        Film from the side, keep your full body visible, and set the phone around hip height.
-      </p>
-      <div className="mt-3 grid gap-2">
-        {FILMING_TIPS.map((tip) => (
-          <div key={tip} className="flex items-center gap-2 text-sm text-charcoal-300">
-            <CheckCircleIcon size={18} weight="fill" className="text-medium_slate_blue-500" />
-            <span>{tip}</span>
-          </div>
-        ))}
-      </div>
+  const renderFilmingBanner = (compact = false) => (
+    <div
+      className={cn(
+        "rounded-2xl border border-medium_slate_blue-700 bg-soft_periwinkle-900 px-4 py-3 text-sm text-charcoal-300",
+        compact && "rounded-[1.5rem]",
+      )}
+    >
+      {FILMING_BANNER}
     </div>
   );
 
@@ -344,28 +346,34 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
       className={cn(
         "overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100",
         isExpandedMobileCapture && "rounded-[1.5rem] border-medium_slate_blue-700",
-        isFullscreen && "flex-1 rounded-[1.75rem] border-medium_slate_blue-700",
+        isFullscreen && "flex flex-1 items-center justify-center rounded-[1.75rem] border-medium_slate_blue-700 p-3",
       )}
     >
-      <video
-        ref={videoRef}
-        src={hasStream ? undefined : value.url ?? undefined}
-        controls={Boolean(value.url) && !hasStream}
-        autoPlay={hasStream}
-        muted={hasStream}
-        playsInline
-        className={cn(
-          "w-full object-cover",
-          isFullscreen ? "h-full min-h-0" : isExpandedMobileCapture ? "aspect-[4/5] min-h-[420px]" : "aspect-video",
-        )}
-        onLoadedMetadata={() => {
-          const duration = videoRef.current?.duration ?? null;
-          onChange({
-            ...value,
-            duration: Number.isFinite(duration) ? duration : null,
-          });
-        }}
-      />
+      <div className={cn("overflow-hidden rounded-[1.35rem] bg-charcoal-100", isFullscreen ? fullscreenPreviewFrameClass : "w-full")}>
+        <video
+          ref={videoRef}
+          src={hasStream ? undefined : value.url ?? undefined}
+          controls={Boolean(value.url) && !hasStream}
+          autoPlay={hasStream}
+          muted={hasStream}
+          playsInline
+          className={cn(
+            "w-full",
+            isFullscreen
+              ? "h-full object-contain"
+              : isExpandedMobileCapture
+                ? "aspect-[4/5] min-h-[420px] object-cover"
+                : "aspect-video object-cover",
+          )}
+          onLoadedMetadata={() => {
+            const duration = videoRef.current?.duration ?? null;
+            onChange({
+              ...value,
+              duration: Number.isFinite(duration) ? duration : null,
+            });
+          }}
+        />
+      </div>
     </div>
   );
 
@@ -526,8 +534,7 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
             )}
           </div>
         ) : (
-          <div className="space-y-5 py-2">
-            {renderFilmingGuide()}
+          <div className="space-y-4 py-2">
             <div className="flex flex-col items-center gap-4 py-3 text-center">
               <span className="rounded-full bg-medium_slate_blue-900 p-4 text-medium_slate_blue-500">
                 <UploadSimpleIcon size={24} />
@@ -551,6 +558,7 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
                 </Button>
               </div>
             </div>
+            <p className="text-center text-sm text-grey-500">{FILMING_BANNER}</p>
           </div>
         )}
       </div>
@@ -559,20 +567,20 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
       </Card>
 
       {shouldUseMobileStudio ? (
-        <div className="fixed inset-0 z-[70] bg-white_smoke-500 md:hidden">
+        <div className="fixed inset-0 z-[100] h-dvh w-screen bg-white_smoke-500 md:hidden">
           <div
             className="flex h-full flex-col overflow-hidden overscroll-none px-4"
             style={{
-              paddingTop: "max(1rem, env(safe-area-inset-top))",
+              paddingTop: "max(0px, env(safe-area-inset-top))",
               paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
             }}
           >
-            <div className="flex items-start justify-between gap-4 pb-4">
-              <div className="space-y-1">
+            <div className="flex items-start justify-between gap-4 border-b border-silver-800 bg-white_smoke-500 px-1 pb-4 pt-4">
+              <div className="space-y-2">
                 <Badge variant="brand">{hasStream ? "Camera live" : value.url ? "Rep selected" : "Capture studio"}</Badge>
-                <div>
+                <div className="space-y-1">
                   <h3 className="text-xl font-medium text-charcoal-200">Capture your rep</h3>
-                  <p className="text-sm text-grey-500">Use a full-screen view to frame, record, and confirm the exact clip you want analyzed.</p>
+                  <p className="text-sm text-grey-500">Frame the exact rep you want analyzed, then keep the best clip.</p>
                 </div>
               </div>
               <Button type="button" variant="ghost" size="sm" onClick={handleDismissMobileStudio} className="shrink-0">
@@ -581,7 +589,33 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
               </Button>
             </div>
 
-            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-1 pt-4">
+              {(hasStream || value.url) ? (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant={mobilePreviewOrientation === "vertical" ? "secondary" : "ghost"}
+                      size="sm"
+                      onClick={() => handleChangeMobilePreviewOrientation("vertical")}
+                      className="w-full"
+                    >
+                      Vertical
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={mobilePreviewOrientation === "horizontal" ? "secondary" : "ghost"}
+                      size="sm"
+                      onClick={() => handleChangeMobilePreviewOrientation("horizontal")}
+                      className="w-full"
+                    >
+                      Horizontal
+                    </Button>
+                  </div>
+                  {renderFilmingBanner(true)}
+                </>
+              ) : null}
+
               {value.url || hasStream ? (
                 <>
                   {renderPreviewSurface(true)}
@@ -589,7 +623,6 @@ export function VideoUploader({ videoRef, value, onChange }: VideoUploaderProps)
                 </>
               ) : (
                 <>
-                  {renderFilmingGuide(true)}
                   <div className="flex flex-1 items-center justify-center rounded-[1.75rem] border border-dashed border-medium_slate_blue-700 bg-soft_periwinkle-900 px-6 text-center">
                     <div className="space-y-2">
                       <p className="text-base font-medium text-charcoal-300">Choose how you want to capture this set</p>
