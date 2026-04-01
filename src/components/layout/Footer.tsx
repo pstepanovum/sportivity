@@ -1,4 +1,6 @@
 // FILE: src/components/layout/Footer.tsx
+import { FooterCredits } from "@/components/ui/sections/footer/footer-credits";
+
 export function Footer() {
   return (
     <footer className="bg-transparent">
@@ -6,6 +8,7 @@ export function Footer() {
         <p>Sportivity helps athletes capture lifts, review movement quality, and get fast AI coaching between sets.</p>
         <p className="sm:text-right">Upload, record, analyze, and track progress over time with form scores, cues, and session history.</p>
       </div>
+      <FooterCredits />
     </footer>
   );
 }
