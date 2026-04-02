@@ -3,22 +3,34 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import Link from "next/link";
+import { GearIcon } from "@phosphor-icons/react/dist/csr/Gear";
 import { SignOutIcon } from "@phosphor-icons/react/dist/csr/SignOut";
 
 import { Avatar, Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 interface ProfileMenuProps {
+  avatarUrl?: string | null;
   email?: string;
   isSigningOut?: boolean;
   name?: string | null;
   onSignOut: () => void | Promise<void>;
+  variant?: "desktop" | "mobile";
 }
 
-export function ProfileMenu({ email, isSigningOut = false, name, onSignOut }: ProfileMenuProps) {
+export function ProfileMenu({
+  avatarUrl,
+  email,
+  isSigningOut = false,
+  name,
+  onSignOut,
+  variant = "desktop",
+}: ProfileMenuProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = variant === "mobile";
 
   const clearCloseTimeout = () => {
     if (closeTimeoutRef.current !== null) {
@@ -72,8 +84,8 @@ export function ProfileMenu({ email, isSigningOut = false, name, onSignOut }: Pr
     <div
       ref={containerRef}
       className="relative"
-      onMouseEnter={openMenu}
-      onMouseLeave={scheduleCloseMenu}
+      onMouseEnter={isMobile ? undefined : openMenu}
+      onMouseLeave={isMobile ? undefined : scheduleCloseMenu}
     >
       <button
         type="button"
@@ -88,39 +100,90 @@ export function ProfileMenu({ email, isSigningOut = false, name, onSignOut }: Pr
       >
         <Avatar
           name={name ?? email}
+          src={avatarUrl}
           className={cn(
-            "h-11 w-11 transition-colors",
-            isOpen && "bg-medium_slate_blue-500 text-white",
+            "transition-colors",
+            isMobile
+              ? "h-9 w-9 border border-silver-700 bg-transparent text-xs font-medium text-charcoal-300"
+              : "h-11 w-11",
+            isOpen && !avatarUrl && "bg-medium_slate_blue-500 text-white",
           )}
         />
       </button>
 
-      <div
-        className={cn(
-          "absolute right-0 top-full z-50 w-[240px] pt-3 transition-all",
-          isOpen ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
-        )}
-      >
-        <div className="rounded-2xl border border-silver-800 bg-white p-4" role="menu">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-charcoal-300">{name ?? "Athlete"}</p>
-            <p className="text-xs text-grey-600">{email}</p>
-          </div>
+      {isMobile ? (
+        <>
+          <div
+            className={cn(
+              "fixed inset-0 z-40 bg-charcoal-100/10 transition-opacity",
+              isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+            )}
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
 
-          <div className="mt-4 border-t border-silver-800 pt-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              loading={isSigningOut}
-              onClick={() => void onSignOut()}
-              className="w-full justify-start"
-            >
-              <SignOutIcon size={18} />
-              Log out
-            </Button>
+          <div
+            className={cn(
+              "fixed inset-x-6 z-50 transition-all",
+              isOpen ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
+            )}
+            style={{ bottom: "calc(max(1rem, env(safe-area-inset-bottom)) + 4.75rem)" }}
+          >
+            <div className="rounded-[1.75rem] border border-silver-800 bg-white p-4" role="menu">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-charcoal-300">{name ?? "Athlete"}</p>
+                <p className="text-xs text-grey-600">{email}</p>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-2 border-t border-silver-800 pt-4">
+                <Link href="/settings" onClick={() => setIsOpen(false)}>
+                  <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <GearIcon size={18} />
+                    Settings
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  loading={isSigningOut}
+                  onClick={() => void onSignOut()}
+                  className="w-full justify-start"
+                >
+                  <SignOutIcon size={18} />
+                  Log out
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div
+          className={cn(
+            "absolute right-0 top-full z-50 w-[240px] pt-3 transition-all",
+            isOpen ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0",
+          )}
+        >
+          <div className="rounded-2xl border border-silver-800 bg-white p-4" role="menu">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-charcoal-300">{name ?? "Athlete"}</p>
+              <p className="text-xs text-grey-600">{email}</p>
+            </div>
+
+            <div className="mt-4 border-t border-silver-800 pt-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                loading={isSigningOut}
+                onClick={() => void onSignOut()}
+                className="w-full justify-start"
+              >
+                <SignOutIcon size={18} />
+                Log out
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

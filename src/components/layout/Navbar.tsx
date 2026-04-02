@@ -4,9 +4,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { BarbellIcon } from "@phosphor-icons/react/dist/csr/Barbell";
+import { GearIcon } from "@phosphor-icons/react/dist/csr/Gear";
+import { HouseSimpleIcon } from "@phosphor-icons/react/dist/csr/HouseSimple";
 import { startTransition, useEffect, useState } from "react";
 
 import { BrandLogo } from "@/components/layout/BrandLogo";
+import { ProfileMenu } from "@/components/layout/ProfileMenu";
 import { Avatar, Button } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
@@ -184,40 +188,51 @@ export function Navbar() {
           style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
         >
           <div className="flex w-full items-center justify-between rounded-full border border-silver-700 bg-white/90 px-2 py-1.5 backdrop-blur-md">
-            <nav className="flex min-w-0 flex-1 items-center gap-0.5">
-              {appLinks.map((link) => {
-                const active = isLinkActive(link.href);
+            <Link
+              href="/dashboard"
+              aria-label="Sportivity home"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white_smoke-700"
+            >
+              <Image src="/favicon/favicon.svg" alt="Sportivity" width={20} height={20} className="h-5 w-5" priority />
+            </Link>
+
+            <nav className="mx-2 flex min-w-0 flex-1 items-center justify-center gap-1">
+              {[
+                { href: "/dashboard", label: "Home", Icon: HouseSimpleIcon },
+                { href: "/analyze", label: "Analyze", Icon: BarbellIcon },
+                { href: "/settings", label: "Settings", Icon: GearIcon },
+              ].map(({ href, label, Icon }) => {
+                const active = isLinkActive(href);
+
                 return (
                   <Link
-                    key={link.href}
-                    href={link.href}
+                    key={href}
+                    href={href}
                     prefetch={false}
+                    aria-label={label}
                     className={cn(
-                      "inline-flex min-w-0 flex-1 items-center justify-center rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                      "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
                       active
                         ? "bg-silver-800 text-grey-400"
                         : "text-grey-500 hover:bg-white_smoke-700 hover:text-charcoal-300",
                     )}
                   >
-                    {link.label}
+                    <Icon size={18} weight={active ? "fill" : "regular"} />
                   </Link>
                 );
               })}
             </nav>
 
             {user ? (
-              <div className="ml-2 flex items-center gap-2">
-                <Avatar
+              <div className="shrink-0">
+                <ProfileMenu
+                  avatarUrl={user.avatarUrl}
+                  email={user.email}
+                  isSigningOut={isSigningOut}
                   name={userLabel}
-                  src={user.avatarUrl}
-                  className="h-8 w-8 shrink-0 border border-silver-700 bg-transparent text-xs font-medium text-charcoal-300"
+                  onSignOut={() => void handleSignOut()}
+                  variant="mobile"
                 />
-                <p className="hidden max-w-[5rem] truncate text-xs font-medium text-charcoal-300 min-[430px]:block">
-                  {userLabel}
-                </p>
-                <Button variant="ghost" size="sm" loading={isSigningOut} onClick={() => void handleSignOut()} className="px-3">
-                  Log out
-                </Button>
               </div>
             ) : null}
           </div>
