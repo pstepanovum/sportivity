@@ -141,7 +141,7 @@ export function SessionBreakdownView({ feedback, session }: SessionBreakdownView
   };
 
   return (
-    <div className="space-y-8">
+    <div className="min-w-0 space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-[32rem] space-y-2 lg:max-w-[28rem]">
           <Link href="/" className="inline-flex text-sm text-grey-500 transition-colors hover:text-charcoal-300">
@@ -179,11 +179,11 @@ export function SessionBreakdownView({ feedback, session }: SessionBreakdownView
         />
       ) : null}
 
-      <Card className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
-        <div className="space-y-4">
+      <Card className="grid min-w-0 gap-6 overflow-hidden md:grid-cols-[0.9fr_1.1fr]">
+        <div className="min-w-0 space-y-4">
           {session.video_url ? (
             <div className="space-y-3">
-              <div className="relative overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100">
+              <div className="relative min-w-0 overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100">
                 <video
                   ref={videoRef}
                   src={session.video_url}
@@ -191,7 +191,7 @@ export function SessionBreakdownView({ feedback, session }: SessionBreakdownView
                   controls
                   playsInline
                   preload="metadata"
-                  className="aspect-video w-full object-cover"
+                  className="block aspect-video w-full max-w-full bg-charcoal-100 object-contain"
                 />
                 <PoseOverlay videoRef={videoRef} landmarks={[]} feedback={feedback} />
               </div>
@@ -203,7 +203,7 @@ export function SessionBreakdownView({ feedback, session }: SessionBreakdownView
                 <img
                   src={session.thumbnail_url}
                   alt={`${exerciseLabel(session.exercise)} session preview`}
-                  className="aspect-video w-full object-cover"
+                  className="block aspect-video w-full max-w-full object-cover"
                 />
               </div>
               <p className="text-sm text-grey-500">This older session only saved a preview frame, so a full replay is not available.</p>
@@ -215,7 +215,7 @@ export function SessionBreakdownView({ feedback, session }: SessionBreakdownView
           )}
         </div>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <div className="flex flex-wrap gap-2">
             <Badge className={exerciseTint(session.exercise)}>{exerciseLabel(session.exercise)}</Badge>
             <Badge variant={scoreBadgeVariant(session.score)}>{scoreLabel(session.score)}</Badge>

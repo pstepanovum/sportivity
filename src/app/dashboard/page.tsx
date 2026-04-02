@@ -4,13 +4,17 @@ import { redirect } from "next/navigation";
 
 import { DashboardView } from "@/components/dashboard/DashboardView";
 import { SetupNotice } from "@/components/layout/SetupNotice";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
+import { createBreadcrumbJsonLd, createPageMetadata, PRIVATE_PAGE_ROBOTS } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Home",
-  description: "Review your saved sessions, score trends, and recent Sportivity coaching feedback.",
-};
+  description: "Review recent workout sessions, form score trends, saved replays, and Sportivity coaching feedback.",
+  path: "/dashboard",
+  robots: PRIVATE_PAGE_ROBOTS,
+});
 
 export default async function DashboardPage() {
   if (!hasSupabaseEnv()) {
@@ -33,5 +37,10 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  return <DashboardView />;
+  return (
+    <>
+      <JsonLd data={createBreadcrumbJsonLd([{ name: "Home", path: "/dashboard" }])} />
+      <DashboardView />
+    </>
+  );
 }

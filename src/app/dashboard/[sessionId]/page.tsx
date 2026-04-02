@@ -4,15 +4,19 @@ import { notFound, redirect } from "next/navigation";
 
 import { SessionBreakdownView } from "@/components/dashboard/SessionBreakdownView";
 import { SetupNotice } from "@/components/layout/SetupNotice";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
+import { createBreadcrumbJsonLd, createPageMetadata, PRIVATE_PAGE_ROBOTS } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 import type { AnalysisFeedback } from "@/types/analysis";
 import type { Database } from "@/types/supabase";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Session breakdown",
-  description: "Open a saved Sportivity session to review score, cues, and workout notes in detail.",
-};
+  description: "Open a saved Sportivity workout session to review the replay, score, voice feedback, and detailed form breakdown.",
+  path: "/dashboard",
+  robots: PRIVATE_PAGE_ROBOTS,
+});
 
 export default async function SessionDetailPage({
   params,
@@ -56,5 +60,15 @@ export default async function SessionDetailPage({
 
   const feedback = sessionRecord.feedback as unknown as AnalysisFeedback;
 
-  return <SessionBreakdownView session={sessionRecord} feedback={feedback} />;
+  return (
+    <>
+      <JsonLd
+        data={createBreadcrumbJsonLd([
+          { name: "Home", path: "/dashboard" },
+          { name: "Session breakdown", path: `/dashboard/${sessionId}` },
+        ])}
+      />
+      <SessionBreakdownView session={sessionRecord} feedback={feedback} />
+    </>
+  );
 }

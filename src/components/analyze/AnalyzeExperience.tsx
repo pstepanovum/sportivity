@@ -47,8 +47,8 @@ export function AnalyzeExperience() {
   const isBusy = status === "extracting" || status === "analyzing";
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1.05fr_0.95fr] md:gap-8">
-      <div className="space-y-6">
+    <div className="grid min-w-0 gap-6 md:grid-cols-[1.05fr_0.95fr] md:items-start md:gap-8">
+      <div className="min-w-0 space-y-6">
         <Card className="space-y-4">
           <div className="space-y-1">
             <h1 className="text-3xl font-medium text-charcoal-200">Analyze your rep</h1>
@@ -88,31 +88,32 @@ export function AnalyzeExperience() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         {selection.url ? (
-          <Card className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <div>
+          <Card className="min-w-0 space-y-4 overflow-hidden">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
                 <h2 className="text-xl font-medium text-charcoal-300">Rep playback</h2>
                 <p className="text-sm text-grey-500">
                   Overlay tracks the moving skeleton during playback and keeps coached joints highlighted.
                 </p>
               </div>
               {isBusy ? (
-                <div className="flex shrink-0 items-center gap-2 rounded-full bg-white_smoke-700 px-3 py-1.5 text-sm text-charcoal-300 whitespace-nowrap">
+                <div className="flex shrink-0 self-start items-center gap-2 whitespace-nowrap rounded-full bg-white_smoke-700 px-3 py-1.5 text-sm text-charcoal-300">
                   <Spinner className="h-4 w-4" />
                   {status === "extracting" ? "Preparing your video" : "Analyzing form"}
                 </div>
               ) : null}
             </div>
 
-            <div className="relative overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100">
+            <div className="relative min-w-0 overflow-hidden rounded-2xl border border-silver-800 bg-charcoal-100">
               <video
                 ref={resultVideoRef}
                 src={selection.url}
                 controls
                 playsInline
-                className="w-full object-contain max-h-[60vh]"
+                preload="metadata"
+                className="block aspect-video w-full max-w-full bg-charcoal-100 object-contain sm:max-h-[60vh]"
               />
               {feedback ? (
                 <PoseOverlay videoRef={resultVideoRef} landmarks={overlayLandmarks} feedback={feedback} />

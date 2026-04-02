@@ -1,10 +1,16 @@
 // FILE: src/app/(auth)/layout.tsx
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AuthBrand } from "@/components/layout/AuthBrand";
 import { AuthDotBackground } from "@/components/layout/AuthDotBackground";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
+import { PRIVATE_PAGE_ROBOTS } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  robots: PRIVATE_PAGE_ROBOTS,
+};
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   if (hasSupabaseEnv()) {

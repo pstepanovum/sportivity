@@ -4,14 +4,18 @@ import { redirect } from "next/navigation";
 
 import { SettingsView } from "@/components/settings/SettingsView";
 import { SetupNotice } from "@/components/layout/SetupNotice";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { resolveCoachStyle, resolveCoachVoice } from "@/lib/openai/voice";
 import { hasSupabaseEnv } from "@/lib/supabase/config";
+import { createBreadcrumbJsonLd, createPageMetadata, PRIVATE_PAGE_ROBOTS } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "Settings",
-  description: "Update your Sportivity display name and profile photo.",
-};
+  description: "Update your Sportivity profile, coaching voice, coach vibe, and avatar settings.",
+  path: "/settings",
+  robots: PRIVATE_PAGE_ROBOTS,
+});
 
 export default async function SettingsPage() {
   if (!hasSupabaseEnv()) {
@@ -41,13 +45,21 @@ export default async function SettingsPage() {
     .maybeSingle();
 
   return (
-    <SettingsView
-      userId={user.id}
-      initialAvatarUrl={profile?.avatar_url ?? null}
-      initialCoachStyle={resolveCoachStyle(user.user_metadata.coach_style)}
-      initialCoachVoice={resolveCoachVoice(user.user_metadata.coach_voice)}
-      initialEmail={user.email ?? ""}
-      initialName={profile?.full_name ?? (user.user_metadata.full_name as string | undefined) ?? null}
-    />
+    <>
+      <JsonLd
+        data={createBreadcrumbJsonLd([
+          { name: "Home", path: "/dashboard" },
+          { name: "Settings", path: "/settings" },
+        ])}
+      />
+      <SettingsView
+        userId={user.id}
+        initialAvatarUrl={profile?.avatar_url ?? null}
+        initialCoachStyle={resolveCoachStyle(user.user_metadata.coach_style)}
+        initialCoachVoice={resolveCoachVoice(user.user_metadata.coach_voice)}
+        initialEmail={user.email ?? ""}
+        initialName={profile?.full_name ?? (user.user_metadata.full_name as string | undefined) ?? null}
+      />
+    </>
   );
 }
